@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="MultiAgent.AppHost/MultiAgent.AppHost.csproj" />
+  <Project Path="MultiAgent.ServiceDefaults/MultiAgent.ServiceDefaults.csproj" />
+  <Project Path="MultiAgent/MultiAgent.csproj" />
+</Solution>

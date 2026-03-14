@@ -1,0 +1,13 @@
+C:\Jagadish Kumar\AIRelatedProtoTypes\MultiAgent\MultiAgent.ServiceDefaults\bin\Debug\net10.0\MultiAgent.ServiceDefaults.deps.json
+C:\Jagadish Kumar\AIRelatedProtoTypes\MultiAgent\MultiAgent.ServiceDefaults\bin\Debug\net10.0\MultiAgent.ServiceDefaults.dll
+C:\Jagadish Kumar\AIRelatedProtoTypes\MultiAgent\MultiAgent.ServiceDefaults\bin\Debug\net10.0\MultiAgent.ServiceDefaults.pdb
+C:\Jagadish Kumar\AIRelatedProtoTypes\MultiAgent\MultiAgent.ServiceDefaults\obj\Debug\net10.0\MultiAgent.ServiceDefaults.csproj.AssemblyReference.cache
+C:\Jagadish Kumar\AIRelatedProtoTypes\MultiAgent\MultiAgent.ServiceDefaults\obj\Debug\net10.0\MultiAgent.ServiceDefaults.GeneratedMSBuildEditorConfig.editorconfig
+C:\Jagadish Kumar\AIRelatedProtoTypes\MultiAgent\MultiAgent.ServiceDefaults\obj\Debug\net10.0\MultiAgent.ServiceDefaults.AssemblyInfoInputs.cache
+C:\Jagadish Kumar\AIRelatedProtoTypes\MultiAgent\MultiAgent.ServiceDefaults\obj\Debug\net10.0\MultiAgent.ServiceDefaults.AssemblyInfo.cs
+C:\Jagadish Kumar\AIRelatedProtoTypes\MultiAgent\MultiAgent.ServiceDefaults\obj\Debug\net10.0\MultiAgent.ServiceDefaults.csproj.CoreCompileInputs.cache
+C:\Jagadish Kumar\AIRelatedProtoTypes\MultiAgent\MultiAgent.ServiceDefaults\obj\Debug\net10.0\MultiAgent.ServiceDefaults.sourcelink.json
+C:\Jagadish Kumar\AIRelatedProtoTypes\MultiAgent\MultiAgent.ServiceDefaults\obj\Debug\net10.0\MultiAgent.ServiceDefaults.dll
+C:\Jagadish Kumar\AIRelatedProtoTypes\MultiAgent\MultiAgent.ServiceDefaults\obj\Debug\net10.0\refint\MultiAgent.ServiceDefaults.dll
+C:\Jagadish Kumar\AIRelatedProtoTypes\MultiAgent\MultiAgent.ServiceDefaults\obj\Debug\net10.0\MultiAgent.ServiceDefaults.pdb
+C:\Jagadish Kumar\AIRelatedProtoTypes\MultiAgent\MultiAgent.ServiceDefaults\obj\Debug\net10.0\ref\MultiAgent.ServiceDefaults.dll
