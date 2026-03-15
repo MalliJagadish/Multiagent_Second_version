@@ -38,14 +38,14 @@ public class GitHubModelsChatClient : IChatClient
             ? new
             {
                 model = _model,
-                max_tokens = options?.MaxOutputTokens ?? 4096,
+                max_tokens = options?.MaxOutputTokens ?? 16000,
                 messages = ConvertMessages(messages),
                 tools
             }
             : new
             {
                 model = _model,
-                max_tokens = options?.MaxOutputTokens ?? 4096,
+                max_tokens = options?.MaxOutputTokens ?? 16000,
                 messages = ConvertMessages(messages)
             };
 

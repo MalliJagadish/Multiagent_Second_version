@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MultiAgent.ServiceDefaults")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4d363b98bf28b6471c2ada577ebb75a5fc66fd6f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5098da0927741b9ef97a8b0b6c21deebac6a0ebf")]
 [assembly: System.Reflection.AssemblyProductAttribute("MultiAgent.ServiceDefaults")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MultiAgent.ServiceDefaults")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

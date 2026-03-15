@@ -7,28 +7,52 @@
       "RelativeMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|solutionrelative:multiagent\\workflows\\multiagentworkflow.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|c:\\jagadish kumar\\airelatedprototypes\\multiagent\\multiagent\\services\\githubservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|solutionrelative:multiagent\\services\\githubservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|c:\\jagadish kumar\\airelatedprototypes\\multiagent\\multiagent\\agents\\geminichatclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|solutionrelative:multiagent\\agents\\geminichatclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|c:\\jagadish kumar\\airelatedprototypes\\multiagent\\multiagent\\agents\\groqchatclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|solutionrelative:multiagent\\agents\\groqchatclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|c:\\jagadish kumar\\airelatedprototypes\\multiagent\\multiagent\\agents\\githubmodelschatclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|solutionrelative:multiagent\\agents\\githubmodelschatclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|c:\\jagadish kumar\\airelatedprototypes\\multiagent\\multiagent\\controllers\\pipelinecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|solutionrelative:multiagent\\controllers\\pipelinecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|c:\\jagadish kumar\\airelatedprototypes\\multiagent\\multiagent\\agents\\throttledchatclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|solutionrelative:multiagent\\agents\\throttledchatclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|c:\\jagadish kumar\\airelatedprototypes\\multiagent\\multiagent\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|solutionrelative:multiagent\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|c:\\jagadish kumar\\airelatedprototypes\\multiagent\\multiagent\\services\\geminithrottler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|solutionrelative:multiagent\\services\\geminithrottler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|c:\\jagadish kumar\\airelatedprototypes\\multiagent\\multiagent\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|solutionrelative:multiagent\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|c:\\jagadish kumar\\airelatedprototypes\\multiagent\\multiagent\\tools\\inmemoryfiletools.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|solutionrelative:multiagent\\tools\\inmemoryfiletools.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|c:\\jagadish kumar\\airelatedprototypes\\multiagent\\multiagent\\models\\pipelinemodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|solutionrelative:multiagent\\models\\pipelinemodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|c:\\jagadish kumar\\airelatedprototypes\\multiagent\\multiagent\\services\\githubservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|solutionrelative:multiagent\\services\\githubservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|c:\\jagadish kumar\\airelatedprototypes\\multiagent\\multiagent\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|solutionrelative:multiagent\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|c:\\jagadish kumar\\airelatedprototypes\\multiagent\\multiagent\\models\\reviewmodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|solutionrelative:multiagent\\models\\reviewmodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|c:\\jagadish kumar\\airelatedprototypes\\multiagent\\multiagent\\controllers\\pipelinecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|solutionrelative:multiagent\\controllers\\pipelinecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|c:\\jagadish kumar\\airelatedprototypes\\multiagent\\multiagent\\models\\pipelinemodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|solutionrelative:multiagent\\models\\pipelinemodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{81CCC64D-8774-B7F0-C7DF-F037B8B3B19E}|MultiAgent\\MultiAgent.csproj|c:\\jagadish kumar\\airelatedprototypes\\multiagent\\multiagent\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
@@ -46,86 +70,8 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 99,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "InMemoryFileTools.cs",
-              "DocumentMoniker": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Tools\\InMemoryFileTools.cs",
-              "RelativeDocumentMoniker": "MultiAgent\\Tools\\InMemoryFileTools.cs",
-              "ToolTip": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Tools\\InMemoryFileTools.cs",
-              "RelativeToolTip": "MultiAgent\\Tools\\InMemoryFileTools.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAADEAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-14T14:52:25.256Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "PipelineModels.cs",
-              "DocumentMoniker": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Models\\PipelineModels.cs",
-              "RelativeDocumentMoniker": "MultiAgent\\Models\\PipelineModels.cs",
-              "ToolTip": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Models\\PipelineModels.cs",
-              "RelativeToolTip": "MultiAgent\\Models\\PipelineModels.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAOAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-14T14:45:40.859Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "PipelineController.cs",
-              "DocumentMoniker": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Controllers\\PipelineController.cs",
-              "RelativeDocumentMoniker": "MultiAgent\\Controllers\\PipelineController.cs",
-              "ToolTip": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Controllers\\PipelineController.cs",
-              "RelativeToolTip": "MultiAgent\\Controllers\\PipelineController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-14T14:34:52.051Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "GitHubService.cs",
-              "DocumentMoniker": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Services\\GitHubService.cs",
-              "RelativeDocumentMoniker": "MultiAgent\\Services\\GitHubService.cs",
-              "ToolTip": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Services\\GitHubService.cs",
-              "RelativeToolTip": "MultiAgent\\Services\\GitHubService.cs",
-              "ViewState": "AgIAAEIBAAAAAAAAAAAlwFYBAAAuAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-14T14:00:51.736Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "MultiAgentWorkflow.cs",
-              "DocumentMoniker": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Workflows\\MultiAgentWorkflow.cs",
-              "RelativeDocumentMoniker": "MultiAgent\\Workflows\\MultiAgentWorkflow.cs",
-              "ToolTip": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Workflows\\MultiAgentWorkflow.cs",
-              "RelativeToolTip": "MultiAgent\\Workflows\\MultiAgentWorkflow.cs",
-              "ViewState": "AgIAAD0AAAAAAAAAAAAQwFAAAAAmAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-14T13:50:04.75Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "GitHubModelsChatClient.cs",
-              "DocumentMoniker": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Agents\\GitHubModelsChatClient.cs",
-              "RelativeDocumentMoniker": "MultiAgent\\Agents\\GitHubModelsChatClient.cs",
-              "ToolTip": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Agents\\GitHubModelsChatClient.cs",
-              "RelativeToolTip": "MultiAgent\\Agents\\GitHubModelsChatClient.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-14T13:49:44.01Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:137:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
@@ -480,20 +426,166 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ThrottledChatClient.cs",
+              "DocumentMoniker": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Agents\\ThrottledChatClient.cs",
+              "RelativeDocumentMoniker": "MultiAgent\\Agents\\ThrottledChatClient.cs",
+              "ToolTip": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Agents\\ThrottledChatClient.cs",
+              "RelativeToolTip": "MultiAgent\\Agents\\ThrottledChatClient.cs",
+              "ViewState": "AgIAABsAAAAAAAAAAAAYwCYAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-15T16:54:43.29Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Program.cs",
+              "RelativeDocumentMoniker": "MultiAgent\\Program.cs",
+              "ToolTip": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Program.cs",
+              "RelativeToolTip": "MultiAgent\\Program.cs",
+              "ViewState": "AgIAACoAAAAAAAAAAAAAADwAAAAxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-15T16:54:14.918Z"
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 6,
+              "Title": "GeminiThrottler.cs",
+              "DocumentMoniker": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Services\\GeminiThrottler.cs",
+              "RelativeDocumentMoniker": "MultiAgent\\Services\\GeminiThrottler.cs",
+              "ToolTip": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Services\\GeminiThrottler.cs",
+              "RelativeToolTip": "MultiAgent\\Services\\GeminiThrottler.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-15T16:53:54.133Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\appsettings.json",
               "RelativeDocumentMoniker": "MultiAgent\\appsettings.json",
               "ToolTip": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\appsettings.json",
               "RelativeToolTip": "MultiAgent\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAuAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAA2AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-03-14T13:46:57.99Z",
+              "WhenOpened": "2026-03-15T12:00:37.841Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "GroqChatClient.cs",
+              "DocumentMoniker": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Agents\\GroqChatClient.cs",
+              "RelativeDocumentMoniker": "MultiAgent\\Agents\\GroqChatClient.cs",
+              "ToolTip": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Agents\\GroqChatClient.cs",
+              "RelativeToolTip": "MultiAgent\\Agents\\GroqChatClient.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAAAkAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-15T06:23:44.502Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 1,
+              "Title": "GeminiChatClient.cs",
+              "DocumentMoniker": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Agents\\GeminiChatClient.cs",
+              "RelativeDocumentMoniker": "MultiAgent\\Agents\\GeminiChatClient.cs",
+              "ToolTip": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Agents\\GeminiChatClient.cs",
+              "RelativeToolTip": "MultiAgent\\Agents\\GeminiChatClient.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAAAkAAAAbAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-15T06:20:11.254Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "ReviewModels.cs",
+              "DocumentMoniker": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Models\\ReviewModels.cs",
+              "RelativeDocumentMoniker": "MultiAgent\\Models\\ReviewModels.cs",
+              "ToolTip": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Models\\ReviewModels.cs",
+              "RelativeToolTip": "MultiAgent\\Models\\ReviewModels.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-15T06:05:01.602Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "InMemoryFileTools.cs",
+              "DocumentMoniker": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Tools\\InMemoryFileTools.cs",
+              "RelativeDocumentMoniker": "MultiAgent\\Tools\\InMemoryFileTools.cs",
+              "ToolTip": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Tools\\InMemoryFileTools.cs",
+              "RelativeToolTip": "MultiAgent\\Tools\\InMemoryFileTools.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAowA4AAABEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-14T14:52:25.256Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "PipelineModels.cs",
+              "DocumentMoniker": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Models\\PipelineModels.cs",
+              "RelativeDocumentMoniker": "MultiAgent\\Models\\PipelineModels.cs",
+              "ToolTip": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Models\\PipelineModels.cs",
+              "RelativeToolTip": "MultiAgent\\Models\\PipelineModels.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-14T14:45:40.859Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "PipelineController.cs",
+              "DocumentMoniker": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Controllers\\PipelineController.cs",
+              "RelativeDocumentMoniker": "MultiAgent\\Controllers\\PipelineController.cs",
+              "ToolTip": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Controllers\\PipelineController.cs",
+              "RelativeToolTip": "MultiAgent\\Controllers\\PipelineController.cs",
+              "ViewState": "AgIAABAAAAAAAAAAAAAQwAYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-14T14:34:52.051Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "GitHubService.cs",
+              "DocumentMoniker": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Services\\GitHubService.cs",
+              "RelativeDocumentMoniker": "MultiAgent\\Services\\GitHubService.cs",
+              "ToolTip": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Services\\GitHubService.cs",
+              "RelativeToolTip": "MultiAgent\\Services\\GitHubService.cs",
+              "ViewState": "AgIAAO0BAAAAAAAAAAAmwAACAAA/AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-14T14:00:51.736Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "MultiAgentWorkflow.cs",
+              "DocumentMoniker": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Workflows\\MultiAgentWorkflow.cs",
+              "RelativeDocumentMoniker": "MultiAgent\\Workflows\\MultiAgentWorkflow.cs",
+              "ToolTip": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Workflows\\MultiAgentWorkflow.cs",
+              "RelativeToolTip": "MultiAgent\\Workflows\\MultiAgentWorkflow.cs",
+              "ViewState": "AgIAAAAEAAAAAAAAAAAtwBAEAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-14T13:50:04.75Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "GitHubModelsChatClient.cs",
+              "DocumentMoniker": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Agents\\GitHubModelsChatClient.cs",
+              "RelativeDocumentMoniker": "MultiAgent\\Agents\\GitHubModelsChatClient.cs",
+              "ToolTip": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Agents\\GitHubModelsChatClient.cs",
+              "RelativeToolTip": "MultiAgent\\Agents\\GitHubModelsChatClient.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAlwBYAAABEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-14T13:49:44.01Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
               "Title": "launchSettings.json",
               "DocumentMoniker": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent\\Properties\\launchSettings.json",
               "RelativeDocumentMoniker": "MultiAgent\\Properties\\launchSettings.json",
@@ -501,12 +593,11 @@
               "RelativeToolTip": "MultiAgent\\Properties\\launchSettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-03-14T13:18:30.96Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-14T13:18:30.96Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 14,
               "Title": "launchSettings.json",
               "DocumentMoniker": "C:\\Jagadish Kumar\\AIRelatedProtoTypes\\MultiAgent\\MultiAgent.AppHost\\Properties\\launchSettings.json",
               "RelativeDocumentMoniker": "MultiAgent.AppHost\\Properties\\launchSettings.json",

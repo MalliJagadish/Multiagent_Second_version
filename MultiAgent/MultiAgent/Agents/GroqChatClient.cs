@@ -37,7 +37,7 @@ public class GroqChatClient : IChatClient
             ? new
             {
                 model = _model,
-                max_tokens = options?.MaxOutputTokens ?? 8096,
+                max_tokens = options?.MaxOutputTokens ?? 16000,
                 messages = ConvertMessages(messages),
                 tools,
                 tool_choice = "auto"
@@ -45,7 +45,7 @@ public class GroqChatClient : IChatClient
             : new
             {
                 model = _model,
-                max_tokens = options?.MaxOutputTokens ?? 8096,
+                max_tokens = options?.MaxOutputTokens ?? 16000,
                 messages = ConvertMessages(messages)
             };
 
@@ -55,7 +55,43 @@ public class GroqChatClient : IChatClient
         var json = await resp.Content.ReadAsStringAsync(ct);
 
         if (!resp.IsSuccessStatusCode)
+        {
+            // Groq returns tool_use_failed when Llama emits XML-style function calls
+            // Parse the XML ourselves and build a proper FunctionCallContent
+            if (json.Contains("tool_use_failed"))
+            {
+                try
+                {
+                    using var errorDoc = JsonDocument.Parse(json);
+                    var failedGen = errorDoc.RootElement
+                        .GetProperty("error")
+                        .GetProperty("failed_generation")
+                        .GetString() ?? "";
+
+                    // Extract function name — appears after <function= and before any of: > { space =
+                    var nameMatch = System.Text.RegularExpressions.Regex.Match(
+                        failedGen, @"<function=(\w+)");
+
+                    // Extract JSON object — first { to last }
+                    var jsonStart = failedGen.IndexOf('{');
+                    var jsonEnd = failedGen.LastIndexOf('}');
+
+                    if (nameMatch.Success && jsonStart >= 0 && jsonEnd > jsonStart)
+                    {
+                        var fnName = nameMatch.Groups[1].Value;
+                        var fnArgsJson = failedGen.Substring(jsonStart, jsonEnd - jsonStart + 1);
+                        var args = JsonSerializer.Deserialize<Dictionary<string, object?>>(fnArgsJson)
+                                   ?? new Dictionary<string, object?>();
+                        var callId = Guid.NewGuid().ToString();
+                        return new ChatResponse(new ChatMessage(ChatRole.Assistant,
+                            new List<AIContent> { new FunctionCallContent(callId, fnName, args) }));
+                    }
+                }
+                catch { }
+            }
+
             throw new Exception($"Groq {resp.StatusCode}: {json}");
+        }
 
         using var doc = JsonDocument.Parse(json);
         var choice = doc.RootElement.GetProperty("choices")[0];

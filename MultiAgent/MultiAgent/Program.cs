@@ -58,6 +58,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<PipelineHistoryService>();
 builder.Services.AddSingleton<GitHubService>();
 builder.Services.AddTransient<MultiAgentWorkflow>();
+builder.Services.AddSingleton<GeminiThrottler>();
 
 // CORS — SignalR requires credentials mode, which forbids wildcard origin.
 // Use explicit origins + AllowCredentials for everything.

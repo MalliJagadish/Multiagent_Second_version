@@ -6,19 +6,23 @@ using MultiAgent.Tools;
 using MultiAgent.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using System.ComponentModel;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace MultiAgent.Workflows;
 
 /// <summary>
-/// MultiAgent Workflow — fully in-memory, no local disk.
+/// MultiAgent Workflow — internal review loop + resolved/unresolved PR comments.
 ///
-/// Files are stored in PipelineState.Files (Dictionary&lt;string, string&gt;)
-/// and committed directly to GitHub via the Git Data API.
-/// Works like GitHub Copilot's coding agent — no local folder needed.
-///
-/// PIPELINE ORDER:
-///   Phase 1 (Sequential): CoderAgent → UnitTestAgent → PlaywrightAgent
-///   Phase 2 (Parallel):   ReviewAgent + SecurityAgent (both post to PR)
+/// FLOW:
+///   Phase 1: Coder generates code
+///   Phase 2: Internal Review + Security (parallel, no PR yet)
+///   Phase 3: Coder fixes or defends ALL findings (review + security together)
+///   Phase 4: Re-review (review agent + security agent in parallel)
+///   Phase 5: Unit tests + Playwright (parallel, after review loop)
+///   Phase 6: Commit → Create PR → Post ALL comments inline
+///            → Resolve accepted threads (collapsed)
+///            → Leave unresolved threads open (visible)
 /// </summary>
 public class MultiAgentWorkflow
 {
@@ -28,11 +32,11 @@ public class MultiAgentWorkflow
     private readonly IHubContext<PipelineHub> _hub;
     private readonly ILogger<MultiAgentWorkflow> _logger;
 
+    private const int MaxReviewRounds = 2;
+
     public MultiAgentWorkflow(
-        IConfiguration config,
-        GitHubService github,
-        PipelineHistoryService history,
-        IHubContext<PipelineHub> hub,
+        IConfiguration config, GitHubService github,
+        PipelineHistoryService history, IHubContext<PipelineHub> hub,
         ILogger<MultiAgentWorkflow> logger)
     {
         _config = config;
@@ -64,34 +68,108 @@ public class MultiAgentWorkflow
         });
 
         await Log(state, "Orchestrator", $"🚀 Pipeline started: {request.FeatureDescription}");
-        await Log(state, "Orchestrator", "📦 Mode: In-memory (no local disk)");
 
         try
         {
             await CreateBranch(state);
 
-            if (state.GitHubIssueNumber != null)
-                await PostIssueComment(state.GitHubIssueNumber,
-                    $"🤖 **DevPipeline started!**\nBranch: `{state.BranchName}`\nMode: In-memory (no local disk)");
-
-            // ── PHASE 1: Sequential ───────────────────────────────
-            await Log(state, "Orchestrator", "▶️ Phase 1: Coder → UnitTest → Playwright");
-
+            // ── PHASE 1: Generate code ─────────────────────────────
+            await Log(state, "Orchestrator", "▶️ Phase 1: Coder generates code");
             await RunCoderAgent(state);
             VerifyFilesCreated(state);
-            await Task.Delay(20000); // Small delay to ensure all tool results are logged before next agent starts
-            await RunUnitTestAgent(state);
-            await RunPlaywrightAgent(state);
 
-            // ── COMMIT DIRECTLY TO GITHUB (no local disk) ─────────
-            await CommitAndPr(state);
+            // ── PHASE 2–4: Internal review loop ───────────────────
+            await Log(state, "Orchestrator", "▶️ Phase 2–4: Internal review loop");
 
-            // ── PHASE 2: Parallel ─────────────────────────────────
-            await Log(state, "Orchestrator", "▶️ Phase 2: Review + Security (parallel)");
+            for (int round = 1; round <= MaxReviewRounds; round++)
+            {
+                await Log(state, "Orchestrator", $"🔄 Review round {round}/{MaxReviewRounds}");
+
+                // Phase 2: Review + Security in parallel
+                var reviewTask = RunInternalReviewAgent(state);
+                var securityTask = RunInternalSecurityAgent(state);
+                await Task.WhenAll(reviewTask, securityTask);
+
+                // CoderFixAgent gets ALL findings (review + security) together
+                var allFindings = reviewTask.Result.Concat(securityTask.Result).ToList();
+                var criticalCount = allFindings.Count(f =>
+                    f.Severity is FindingSeverity.Critical or FindingSeverity.High);
+
+                await Log(state, "Orchestrator",
+                    $"📋 {allFindings.Count} finding(s), {criticalCount} critical/high",
+                    criticalCount > 0 ? "warning" : "info");
+
+                if (allFindings.Count == 0)
+                {
+                    await Log(state, "Orchestrator", "✅ No issues found", "success");
+                    break;
+                }
+
+                // Phase 3: Coder fixes or defends ALL findings in one pass
+                await Log(state, "Orchestrator", "▶️ Coder addressing all findings...");
+                var coderResponses = await RunCoderFixAgent(state, allFindings);
+
+                // Phase 4: Re-review (split by original agent, parallel)
+                await Log(state, "Orchestrator", "▶️ Re-evaluating responses (review + security parallel)...");
+
+                var reviewFindings = allFindings.Where(f => f.Source == "ReviewAgent").ToList();
+                var securityFindings = allFindings.Where(f => f.Source == "SecurityAgent").ToList();
+
+                var reReviewTask = reviewFindings.Count > 0
+                    ? RunReReviewAgent(state, reviewFindings, coderResponses)
+                    : Task.FromResult(new List<ReReviewResult>());
+
+                var secReReviewTask = securityFindings.Count > 0
+                    ? RunSecurityReReviewAgent(state, securityFindings, coderResponses)
+                    : Task.FromResult(new List<ReReviewResult>());
+
+                await Task.WhenAll(reReviewTask, secReReviewTask);
+                var reReviewResults = reReviewTask.Result.Concat(secReReviewTask.Result).ToList();
+
+                // Record everything in the audit log
+                foreach (var f in allFindings)
+                {
+                    var cr = coderResponses.FirstOrDefault(r => r.FindingId == f.Id);
+                    var rr = reReviewResults.FirstOrDefault(r => r.FindingId == f.Id);
+
+                    state.InternalReviewLog.Add(new ReviewLogEntry
+                    {
+                        Round = round,
+                        Finding = f,
+                        CoderResponse = cr?.Response ?? "(no response)",
+                        FinalStatus = rr?.Accepted == true ? "resolved" : "unresolved"
+                    });
+                }
+
+                var unresolvedCritical = reReviewResults
+                    .Count(r => !r.Accepted &&
+                        (r.Severity is FindingSeverity.Critical or FindingSeverity.High));
+
+                if (unresolvedCritical == 0)
+                {
+                    await Log(state, "Orchestrator", "✅ All critical issues resolved", "success");
+                    break;
+                }
+
+                if (round < MaxReviewRounds)
+                    await Log(state, "Orchestrator",
+                        $"⚠️ {unresolvedCritical} unresolved critical — another round", "warning");
+            }
+
+            // ── PHASE 5: Tests on FINAL stable code (parallel) ────
+            await Log(state, "Orchestrator",
+                "▶️ Phase 5: Tests on final code (NUnit + Playwright in parallel)");
 
             await Task.WhenAll(
-                RunReviewAgent(state),
-                RunSecurityAgent(state));
+                RunUnitTestAgent(state),
+                RunPlaywrightAgent(state));
+
+            // ── PHASE 6: Commit + PR + Post all comments ──────────
+            await Log(state, "Orchestrator", "▶️ Phase 6: Commit → PR → Comments");
+            await CommitAndPr(state);
+
+            if (state.PullRequestNumber != null)
+                await PostAllFindingsToPR(state);
 
             return await Finalize(state);
         }
@@ -104,7 +182,7 @@ public class MultiAgentWorkflow
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // AGENT RUNNERS — all use in-memory file tools
+    // PHASE 1: CODER
     // ═══════════════════════════════════════════════════════════════
 
     private async Task RunCoderAgent(PipelineState state)
@@ -112,31 +190,23 @@ public class MultiAgentWorkflow
         var tools = new List<AITool>
         {
             AIFunctionFactory.Create(
-                ([Description("File path relative to repo root, e.g. Controllers/TodoController.cs")]
-                 string relativePath,
-                 [Description("Complete file content")]
-                 string content) =>
+                ([Description("File path relative to repo root")] string relativePath,
+                 [Description("Complete file content")] string content) =>
                     InMemoryFileTools.WriteFile(state.Files, relativePath, content),
-                "WriteFile",
-                "Write a complete source file. It will be committed to GitHub directly."),
-
+                "WriteFile", "Write a source file."),
             AIFunctionFactory.Create(
                 () => InMemoryFileTools.ListFiles(state.Files),
-                "ListFiles",
-                "List all files currently staged for commit.")
+                "ListFiles", "List staged files.")
         };
 
-        var output = await RunAgentLoop(
-            state,
-            CreateGroqClient(),
+        state.GeneratedCode = await RunAgentLoop(state, CreateGroqClient(),
             BuildCoderPrompt(state),
-            $"Implement this feature for a .NET 10 Web API: {state.FeatureDescription}",
-            "CoderAgent",
-            tools,
-            maxIterations: 15);
-
-        state.GeneratedCode = output;
+            $"Implement: {state.FeatureDescription}", "CoderAgent", tools, 15);
     }
+
+    // ═══════════════════════════════════════════════════════════════
+    // PHASE 5: TESTS (run after review loop completes)
+    // ═══════════════════════════════════════════════════════════════
 
     private async Task RunUnitTestAgent(PipelineState state)
     {
@@ -144,25 +214,17 @@ public class MultiAgentWorkflow
         {
             AIFunctionFactory.Create(
                 () => InMemoryFileTools.ReadAllFiles(state.Files, ".cs"),
-                "ReadSourceCode",
-                "Read all C# source files currently staged."),
-
+                "ReadSourceCode", "Read C# source files."),
             AIFunctionFactory.Create(
-                ([Description("Test file path, e.g. Tests/FeatureTests.cs")]
-                 string relativePath,
-                 [Description("Complete NUnit test file content")]
-                 string content) =>
+                ([Description("Test file path")] string relativePath,
+                 [Description("NUnit test content")] string content) =>
                     InMemoryFileTools.WriteFile(state.Files, relativePath, content),
-                "WriteTestFile",
-                "Write a unit test file. It will be committed to GitHub directly."),
+                "WriteTestFile", "Write a test file."),
         };
 
-        var output = await RunAgentLoop(
-            state, CreateGroqClient(), BuildUnitTestPrompt(state),
-            $"Write unit tests for: {state.FeatureDescription}",
-            "UnitTestAgent", tools, maxIterations: 12);
-
-        state.UnitTestResults = output;
+        state.UnitTestResults = await RunAgentLoop(state, CreateGroqClient(),
+            BuildUnitTestPrompt(state),
+            $"Write NUnit tests for: {state.FeatureDescription}", "UnitTestAgent", tools, 12);
     }
 
     private async Task RunPlaywrightAgent(PipelineState state)
@@ -171,143 +233,577 @@ public class MultiAgentWorkflow
         {
             AIFunctionFactory.Create(
                 () => InMemoryFileTools.ReadAllFiles(state.Files, ".cs"),
-                "ReadBackendCode",
-                "Read backend C# code to understand API endpoints."),
-
+                "ReadBackendCode", "Read backend code."),
             AIFunctionFactory.Create(
-                ([Description("E2E test path, e.g. tests/e2e/feature.spec.ts")]
-                 string relativePath,
-                 [Description("Complete Playwright TS test content")]
-                 string content) =>
+                ([Description("E2E test path")] string relativePath,
+                 [Description("Playwright TS content")] string content) =>
                     InMemoryFileTools.WriteFile(state.Files, relativePath, content),
-                "WriteE2ETest",
-                "Write a Playwright TypeScript E2E test file."),
+                "WriteE2ETest", "Write a Playwright test."),
         };
 
-        var output = await RunAgentLoop(
-            state, CreateGeminiClient(), BuildPlaywrightPrompt(state),
-            $"Write E2E tests for: {state.FeatureDescription}",
-            "PlaywrightAgent", tools, maxIterations: 10);
-
-        state.PlaywrightResults = output;
+        state.PlaywrightResults = await RunAgentLoop(state, CreateGeminiClient(),
+            BuildPlaywrightPrompt(state),
+            $"Write E2E tests for: {state.FeatureDescription}", "PlaywrightAgent", tools, 10);
     }
 
-    private async Task RunReviewAgent(PipelineState state)
+    // ═══════════════════════════════════════════════════════════════
+    // PHASE 2: INTERNAL REVIEW + SECURITY (parallel)
+    // ═══════════════════════════════════════════════════════════════
+
+    private async Task<List<ReviewFinding>> RunInternalReviewAgent(PipelineState state)
     {
+        var findings = new List<ReviewFinding>();
         var tools = new List<AITool>
         {
             AIFunctionFactory.Create(
                 () => InMemoryFileTools.ReadAllFiles(state.Files, ".cs,.ts,.vue"),
-                "ReadAllCode",
-                "Read all code files staged for this pipeline run."),
-
+                "ReadAllCode", "Read all code."),
             AIFunctionFactory.Create(
-                async ([Description("Exact file path, e.g. Controllers/TodoController.cs")]
-                       string filePath,
-                       [Description("Line number that was CHANGED in the new code")]
-                       int line,
-                       [Description("Review comment with issue and fix suggestion")]
-                       string comment) =>
+                ([Description("File path")] string filePath,
+                 [Description("Line number")] int line,
+                 [Description("Issue + suggested fix")] string comment,
+                 [Description("CRITICAL, HIGH, MEDIUM, or LOW")] string severity) =>
                 {
-                    if (state.PullRequestNumber == null || state.CommitSha == null)
-                        return "⚠️ No PR yet — comment skipped";
-                    await _github.PostPRInlineCommentAsync(
-                        state.PullRequestNumber.Value, state.CommitSha,
-                        filePath.TrimStart('/'), line, comment);
-                    return $"✅ Comment posted on {filePath}:{line}";
+                    var f = new ReviewFinding
+                    {
+                        Id = Guid.NewGuid().ToString("N")[..8],
+                        Source = "ReviewAgent",
+                        FilePath = filePath.TrimStart('/'),
+                        Line = line,
+                        Comment = comment,
+                        Severity = ParseSeverity(severity)
+                    };
+                    findings.Add(f);
+                    return $"✅ Finding #{f.Id}: [{severity}] {filePath}:{line}";
                 },
-                "PostInlineComment",
-                "Post an inline code review comment on a specific file and line."),
-
-            AIFunctionFactory.Create(
-                async ([Description("Markdown summary of the review")]
-                       string summary,
-                       [Description("APPROVED, REQUEST_CHANGES, or COMMENT")]
-                       string verdict) =>
-                {
-                    if (state.PullRequestNumber == null) return "⚠️ No PR yet";
-                    var evt = verdict.ToUpper().Contains("APPROV") ? "APPROVE"
-                            : verdict.ToUpper().Contains("REQUEST") ? "REQUEST_CHANGES"
-                            : "COMMENT";
-                    await _github.PostPRReviewAsync(state.PullRequestNumber.Value, summary, evt);
-                    return $"✅ Review submitted: {evt}";
-                },
-                "SubmitPRReview",
-                "Submit the final PR review with verdict.")
+                "ReportFinding", "Report a review finding with severity."),
         };
 
-        var output = await RunAgentLoop(
-            state, CreateGitHubModelsClient(), BuildReviewPrompt(state),
-            $"Review the code for: {state.FeatureDescription}. PR #{state.PullRequestNumber}.",
-            "ReviewAgent", tools, maxIterations: 10);
-
-        state.ReviewFeedback = output;
+        await RunAgentLoop(state, CreateGitHubModelsClient(),
+            BuildInternalReviewPrompt(state),
+            $"Internal review for: {state.FeatureDescription}",
+            "ReviewAgent", tools, 10);
+        return findings;
     }
 
-    private async Task RunSecurityAgent(PipelineState state)
+    private async Task<List<ReviewFinding>> RunInternalSecurityAgent(PipelineState state)
     {
+        var findings = new List<ReviewFinding>();
         var tools = new List<AITool>
         {
             AIFunctionFactory.Create(
                 () => InMemoryFileTools.ReadAllFiles(state.Files, ".cs,.ts,.json"),
-                "ReadCodeForScan",
-                "Read all code files for security analysis."),
-
+                "ReadCodeForScan", "Read code for security scan."),
             AIFunctionFactory.Create(
-                ([Description("Source code to scan for secrets")]
-                 string code) =>
+                ([Description("Code to scan")] string code) =>
                     SecurityScanTools.ScanForSecrets(code),
-                "ScanSecrets",
-                "Scan for hardcoded secrets and API keys."),
-
+                "ScanSecrets", "Scan for hardcoded secrets."),
             AIFunctionFactory.Create(
-                async ([Description("File path")] string filePath,
-                       [Description("Line number")] int line,
-                       [Description("Vulnerability description + fix")] string vulnerability) =>
+                ([Description("File path")] string filePath,
+                 [Description("Line number")] int line,
+                 [Description("Vulnerability + vector + fix")] string vulnerability,
+                 [Description("CRITICAL, HIGH, MEDIUM, or LOW")] string severity) =>
                 {
-                    if (state.PullRequestNumber == null || state.CommitSha == null)
-                        return "⚠️ No PR yet";
-                    await _github.PostPRInlineCommentAsync(
-                        state.PullRequestNumber.Value, state.CommitSha,
-                        filePath.TrimStart('/'), line,
-                        $"🔒 **SECURITY:** {vulnerability}");
-                    return $"✅ Security comment on {filePath}:{line}";
+                    var f = new ReviewFinding
+                    {
+                        Id = Guid.NewGuid().ToString("N")[..8],
+                        Source = "SecurityAgent",
+                        FilePath = filePath.TrimStart('/'),
+                        Line = line,
+                        Comment = vulnerability,
+                        Severity = ParseSeverity(severity)
+                    };
+                    findings.Add(f);
+                    return $"✅ Finding #{f.Id}: [{severity}] {filePath}:{line}";
                 },
-                "PostSecurityComment",
-                "Post an inline security finding on a specific file and line."),
-
-            AIFunctionFactory.Create(
-                async ([Description("Security summary")] string securitySummary,
-                       [Description("PASS or FAIL")] string verdict) =>
-                {
-                    if (state.PullRequestNumber == null) return "⚠️ No PR yet";
-                    var evt = verdict.ToUpper().Contains("FAIL") ? "REQUEST_CHANGES" : "COMMENT";
-                    await _github.PostPRReviewAsync(state.PullRequestNumber.Value,
-                        $"## 🔒 Security Report\n\n{securitySummary}", evt);
-                    return $"✅ Security review: {evt}";
-                },
-                "SubmitSecurityReview",
-                "Submit final security review. PASS or FAIL.")
+                "ReportVulnerability", "Report a security vulnerability."),
         };
 
-        var output = await RunAgentLoop(
-            state, CreateGeminiClient(), BuildSecurityPrompt(state),
-            $"Security scan the code for: {state.FeatureDescription}. PR #{state.PullRequestNumber}.",
-            "SecurityAgent", tools, maxIterations: 10);
-
-        state.SecurityReport = output;
+        await RunAgentLoop(state, CreateGeminiClient(),
+            BuildInternalSecurityPrompt(state),
+            $"Security scan for: {state.FeatureDescription}",
+            "SecurityAgent", tools, 10);
+        return findings;
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // THE CORE TOOL LOOP
+    // PHASE 3: CODER FIXES OR DEFENDS (all findings in one pass)
     // ═══════════════════════════════════════════════════════════════
+
+    private async Task<List<CoderResponse>> RunCoderFixAgent(
+        PipelineState state, List<ReviewFinding> findings)
+    {
+        var responses = new List<CoderResponse>();
+
+        var findingsText = new StringBuilder();
+        findingsText.AppendLine("You MUST call RespondToFinding for EVERY ID below:");
+        findingsText.AppendLine();
+        foreach (var f in findings)
+        {
+            findingsText.AppendLine($"  ID: \"{f.Id}\" | Severity: {f.Severity} | Source: {f.Source}");
+            findingsText.AppendLine($"  File: {f.FilePath}:{f.Line}");
+            findingsText.AppendLine($"  Issue: {f.Comment}");
+            findingsText.AppendLine($"  -> Call: RespondToFinding(\"{f.Id}\", \"FIX\" or \"DEFEND\", explanation)");
+            findingsText.AppendLine();
+        }
+
+        var tools = new List<AITool>
+        {
+            AIFunctionFactory.Create(
+                () => InMemoryFileTools.ReadAllFiles(state.Files, ".cs,.ts"),
+                "ReadCurrentCode", "Read current code."),
+            AIFunctionFactory.Create(
+                ([Description("File path")] string relativePath,
+                 [Description("Updated file content")] string content) =>
+                    InMemoryFileTools.WriteFile(state.Files, relativePath, content),
+                "WriteFile", "Write updated file."),
+            AIFunctionFactory.Create(
+                ([Description("Finding ID (e.g. 'a1b2c3d4')")] string findingId,
+                 [Description("FIX or DEFEND")] string action,
+                 [Description("Explanation of fix or defense reasoning")] string explanation) =>
+                {
+                    responses.Add(new CoderResponse
+                    {
+                        FindingId = findingId,
+                        Action = action.ToUpper().Contains("FIX")
+                            ? ResponseAction.Fix : ResponseAction.Defend,
+                        Response = explanation
+                    });
+                    return $"✅ #{findingId}: {action}";
+                },
+                "RespondToFinding", "Respond to a finding: FIX or DEFEND."),
+            AIFunctionFactory.Create(
+                () => InMemoryFileTools.ListFiles(state.Files),
+                "ListFiles", "List files.")
+        };
+
+        var prompt = $"""
+            You are an expert .NET 10 developer responding to review findings.
+
+            FINDINGS (from both ReviewAgent and SecurityAgent):
+            {findingsText}
+
+            For EACH finding:
+            1. FIX: Call WriteFile with corrected code, then RespondToFinding(id, "FIX", explanation)
+            2. DEFEND: Call RespondToFinding(id, "DEFEND", reasoning) if you disagree
+
+            Fix CRITICAL/HIGH unless you have strong reasoning. MEDIUM/LOW can be defended.
+            Rewrite COMPLETE files when fixing. Respond to EVERY finding.
+
+            CRITICAL: Use tool functions via proper function calling.
+            Do NOT output function calls as XML tags.
+            """;
+
+        await RunAgentLoop(state, CreateGroqClient(), prompt,
+            "Address all findings.", "CoderAgent", tools, 20);
+
+        // Default unresponded findings
+        foreach (var f in findings.Where(f => !responses.Any(r => r.FindingId == f.Id)))
+            responses.Add(new CoderResponse
+            {
+                FindingId = f.Id,
+                Action = ResponseAction.Fix,
+                Response = "(No explicit response — assumed addressed)"
+            });
+
+        await Log(state, "CoderAgent",
+            $"📝 {responses.Count(r => r.Action == ResponseAction.Fix)} fixed, " +
+            $"{responses.Count(r => r.Action == ResponseAction.Defend)} defended");
+        return responses;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // PHASE 4: RE-REVIEW (parallel by original agent)
+    // ═══════════════════════════════════════════════════════════════
+
+    private async Task<List<ReReviewResult>> RunReReviewAgent(
+        PipelineState state, List<ReviewFinding> findings, List<CoderResponse> coderResponses)
+    {
+        var results = new List<ReReviewResult>();
+
+        var context = new StringBuilder();
+        foreach (var f in findings)
+        {
+            var cr = coderResponses.FirstOrDefault(r => r.FindingId == f.Id);
+            context.AppendLine($"FINDING #{f.Id} [{f.Severity}] ({f.Source})");
+            context.AppendLine($"  File: {f.FilePath}:{f.Line}");
+            context.AppendLine($"  Issue: {f.Comment}");
+            context.AppendLine($"  Coder: {cr?.Action} — {cr?.Response}");
+            context.AppendLine();
+        }
+
+        var tools = new List<AITool>
+        {
+            AIFunctionFactory.Create(
+                () => InMemoryFileTools.ReadAllFiles(state.Files, ".cs,.ts"),
+                "ReadUpdatedCode", "Read code after fixes."),
+            AIFunctionFactory.Create(
+                ([Description("Finding ID")] string findingId,
+                 [Description("true=accept, false=unresolved")] bool accepted,
+                 [Description("Reason")] string reason,
+                 [Description("CRITICAL, HIGH, MEDIUM, LOW")] string severity) =>
+                {
+                    results.Add(new ReReviewResult
+                    {
+                        FindingId = findingId,
+                        Accepted = accepted,
+                        Reason = reason,
+                        Severity = ParseSeverity(severity)
+                    });
+                    return $"✅ #{findingId}: {(accepted ? "ACCEPTED" : "UNRESOLVED")}";
+                },
+                "EvaluateResponse", "Accept or reject coder's response."),
+        };
+
+        var prompt = $"""
+            You are the same senior code reviewer who originally found these issues.
+            Now verify whether the coder's fixes are correct.
+
+            CODE REVIEW FINDINGS AND CODER RESPONSES:
+            {context}
+
+            Call EvaluateResponse for EVERY finding:
+            - accepted=true: fix resolves it, OR defense is technically sound
+            - accepted=false: fix incomplete, OR defense is weak
+            - Be fair — accept valid defenses. Be strict on CRITICAL/HIGH.
+
+            STEPS:
+            1. Call ReadUpdatedCode to see current code.
+            2. Call EvaluateResponse for EVERY finding.
+
+            CRITICAL: Use tool functions via proper function calling.
+            Do NOT output function calls as XML tags.
+            """;
+
+        await RunAgentLoop(state, CreateGitHubModelsClient(), prompt,
+            "Evaluate all coder responses.", "ReviewAgent", tools, 10);
+
+        foreach (var f in findings.Where(f => !results.Any(r => r.FindingId == f.Id)))
+            results.Add(new ReReviewResult
+            {
+                FindingId = f.Id,
+                Accepted = false,
+                Reason = "Not evaluated — marked for human review.",
+                Severity = f.Severity
+            });
+
+        var accepted = results.Count(r => r.Accepted);
+        var unresolved = results.Count(r => !r.Accepted);
+        await Log(state, "Orchestrator",
+            $"📋 {accepted} accepted, {unresolved} unresolved",
+            unresolved > 0 ? "warning" : "success");
+        return results;
+    }
+
+    private async Task<List<ReReviewResult>> RunSecurityReReviewAgent(
+        PipelineState state, List<ReviewFinding> findings, List<CoderResponse> coderResponses)
+    {
+        var results = new List<ReReviewResult>();
+
+        var context = new StringBuilder();
+        foreach (var f in findings)
+        {
+            var cr = coderResponses.FirstOrDefault(r => r.FindingId == f.Id);
+            context.AppendLine($"FINDING #{f.Id} [{f.Severity}]");
+            context.AppendLine($"  File: {f.FilePath}:{f.Line}");
+            context.AppendLine($"  Vulnerability: {f.Comment}");
+            context.AppendLine($"  Coder action: {cr?.Action}");
+            context.AppendLine($"  Coder response: {cr?.Response}");
+            context.AppendLine();
+        }
+
+        var tools = new List<AITool>
+        {
+            AIFunctionFactory.Create(
+                () => InMemoryFileTools.ReadAllFiles(state.Files, ".cs,.ts,.json"),
+                "ReadUpdatedCode", "Read code after fixes."),
+            AIFunctionFactory.Create(
+                ([Description("Finding ID")] string findingId,
+                 [Description("true=fixed or valid defense, false=still vulnerable")] bool accepted,
+                 [Description("Why accepted or rejected")] string reason,
+                 [Description("CRITICAL, HIGH, MEDIUM, LOW")] string severity) =>
+                {
+                    results.Add(new ReReviewResult
+                    {
+                        FindingId = findingId,
+                        Accepted = accepted,
+                        Reason = reason,
+                        Severity = ParseSeverity(severity)
+                    });
+                    return $"✅ #{findingId}: {(accepted ? "ACCEPTED" : "UNRESOLVED")}";
+                },
+                "EvaluateResponse", "Accept or reject the coder's fix for a security finding."),
+        };
+
+        var prompt = $"""
+            You are a cybersecurity expert re-evaluating whether security vulnerabilities were properly fixed.
+            You originally found these issues. Now verify the coder's fixes.
+
+            SECURITY FINDINGS AND CODER RESPONSES:
+            {context}
+
+            Call EvaluateResponse for EVERY finding:
+            - accepted=true: the vulnerability is actually fixed, OR the defense proves it's a false positive
+            - accepted=false: the fix doesn't resolve the vulnerability, OR the defense is weak
+
+            STEPS:
+            1. Call ReadUpdatedCode to see the current code.
+            2. For each finding, verify the fix eliminates the attack vector.
+            3. Call EvaluateResponse for EVERY finding.
+
+            Be strict on CRITICAL/HIGH — the fix must eliminate the actual attack vector.
+
+            CRITICAL: Use tool functions via proper function calling.
+            Do NOT output function calls as XML tags.
+            """;
+
+        await RunAgentLoop(state, CreateGeminiClient(), prompt,
+            "Re-evaluate security fixes.", "SecurityAgent", tools, 10);
+
+        foreach (var f in findings.Where(f => !results.Any(r => r.FindingId == f.Id)))
+            results.Add(new ReReviewResult
+            {
+                FindingId = f.Id,
+                Accepted = false,
+                Reason = "Not evaluated — marked for human review.",
+                Severity = f.Severity
+            });
+
+        var accepted = results.Count(r => r.Accepted);
+        var unresolved = results.Count(r => !r.Accepted);
+        await Log(state, "SecurityAgent",
+            $"🔒 Re-review: {accepted} accepted, {unresolved} unresolved",
+            unresolved > 0 ? "warning" : "success");
+
+        return results;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // PHASE 6: POST ALL FINDINGS TO PR + RESOLVE ACCEPTED THREADS
+    // ═══════════════════════════════════════════════════════════════
+
+    private async Task PostAllFindingsToPR(PipelineState state)
+    {
+        if (state.PullRequestNumber == null || state.CommitSha == null) return;
+
+        var prNumber = state.PullRequestNumber.Value;
+        var commitSha = state.CommitSha;
+        var resolvedCount = 0;
+        var unresolvedCount = 0;
+        var failedCount = 0;
+
+        foreach (var entry in state.InternalReviewLog)
+        {
+            var isResolved = entry.FinalStatus == "resolved";
+            var label = entry.Finding.Source == "SecurityAgent" ? "🔒 SECURITY" : "👁️ REVIEW";
+            var statusLabel = isResolved ? "✅ Resolved" : "⚠️ Unresolved — needs human review";
+
+            var body = new StringBuilder();
+            body.AppendLine($"**{label} [{entry.Finding.Severity}] — {statusLabel}**");
+            body.AppendLine();
+            body.AppendLine($"**Issue:** {entry.Finding.Comment}");
+            body.AppendLine();
+            body.AppendLine($"**Coder response (Round {entry.Round}):** {entry.CoderResponse}");
+            body.AppendLine();
+
+            if (isResolved)
+                body.AppendLine("> ✅ This was resolved during internal AI review.");
+            else
+                body.AppendLine("> ⚠️ This was **not resolved** during internal review. Human decision needed.");
+
+            try
+            {
+                await _github.PostInlineCommentWithNodeIdAsync(
+                    prNumber, commitSha,
+                    entry.Finding.FilePath, entry.Finding.Line,
+                    body.ToString());
+
+                if (isResolved)
+                {
+                    try
+                    {
+                        await Task.Delay(500);
+                        await _github.ResolveThreadForCommentAsync(
+                            prNumber, entry.Finding.FilePath, entry.Finding.Line);
+                        resolvedCount++;
+                        await Log(state, "Orchestrator",
+                            $"✅ {entry.Finding.FilePath}:{entry.Finding.Line} — posted + resolved");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning("Could not resolve thread for {File}:{Line}: {Msg}",
+                            entry.Finding.FilePath, entry.Finding.Line, ex.Message);
+                        resolvedCount++;
+                    }
+                }
+                else
+                {
+                    unresolvedCount++;
+                    await Log(state, "Orchestrator",
+                        $"⚠️ {entry.Finding.FilePath}:{entry.Finding.Line} — posted (unresolved)");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("Line comment failed for {File}:{Line}, trying file-level: {Msg}",
+                    entry.Finding.FilePath, entry.Finding.Line, ex.Message);
+                try
+                {
+                    var fileBody = $"**Line {entry.Finding.Line}:** {body}";
+                    await _github.PostFileCommentWithNodeIdAsync(
+                        prNumber, commitSha, entry.Finding.FilePath, fileBody);
+
+                    if (isResolved)
+                    {
+                        await Task.Delay(500);
+                        await _github.ResolveThreadForCommentAsync(
+                            prNumber, entry.Finding.FilePath, entry.Finding.Line);
+                        resolvedCount++;
+                    }
+                    else
+                    {
+                        unresolvedCount++;
+                    }
+                }
+                catch (Exception ex2)
+                {
+                    _logger.LogWarning("File comment also failed for {File}: {Msg}",
+                        entry.Finding.FilePath, ex2.Message);
+                    failedCount++;
+                }
+            }
+        }
+
+        var summaryEvent = state.InternalReviewLog
+            .Any(e => e.FinalStatus == "unresolved" &&
+                (e.Finding.Severity is FindingSeverity.Critical or FindingSeverity.High))
+            ? "REQUEST_CHANGES" : "COMMENT";
+
+        var summary = $"""
+            ## 🤖 AI Pipeline — Review Summary
+
+            | Status | Count |
+            |---|---|
+            | ✅ Resolved (collapsed) | {resolvedCount} |
+            | ⚠️ Unresolved (open) | {unresolvedCount} |
+            {(failedCount > 0 ? $"| ❌ Failed to post | {failedCount} |" : "")}
+
+            {(unresolvedCount == 0
+                ? "All findings resolved. Expand collapsed threads to see internal review history."
+                : "Open comments need human review. Collapsed threads show resolved internal discussions.")}
+            """;
+
+        await _github.PostPRReviewAsync(prNumber, summary, summaryEvent);
+
+        await Log(state, "Orchestrator",
+            $"📝 PR #{prNumber}: {resolvedCount} resolved (collapsed), " +
+            $"{unresolvedCount} unresolved (open)" +
+            (failedCount > 0 ? $", {failedCount} failed to post" : ""),
+            unresolvedCount > 0 ? "warning" : "success");
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // CORE TOOL LOOP
+    // ═══════════════════════════════════════════════════════════════
+
+    //private async Task<string> RunAgentLoop(
+    //    PipelineState state, IChatClient client, string systemPrompt,
+    //    string userMessage, string agentName, List<AITool> tools,
+    //    int maxIterations = 15)
+    //{
+    //    await Task.Delay(3000);
+    //    await SignalAgentStatus(state.PipelineId, agentName, "running");
+    //    await Log(state, agentName, "▶️ Starting...");
+
+    //    var messages = new List<ChatMessage>
+    //    {
+    //        new(ChatRole.System, systemPrompt),
+    //        new(ChatRole.User, userMessage)
+    //    };
+
+    //    var chatOptions = new ChatOptions { Tools = tools };
+    //    var finalOutput = "";
+
+    //    for (int i = 0; i < maxIterations; i++)
+    //    {
+    //        await Log(state, agentName, $"🔄 Turn {i + 1}/{maxIterations}");
+
+    //        ChatResponse response;
+    //        try
+    //        {
+    //            response = await client.GetResponseAsync(messages, chatOptions);
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            // Parse retry-after from error message if provider specifies it
+    //            var waitSeconds = 45;
+    //            var match = Regex.Match(ex.Message, @"retry in (\d+)");
+    //            if (match.Success && int.TryParse(match.Groups[1].Value, out var parsed))
+    //                waitSeconds = parsed + 5;
+
+    //            if (ex.Message.Contains("429") ||
+    //                ex.Message.Contains("TooManyRequests") ||
+    //                ex.Message.Contains("RESOURCE_EXHAUSTED") ||
+    //                ex.Message.Contains("quota") ||
+    //                ex.Message.Contains("rate_limit_exceeded"))
+    //            {
+    //                await Log(state, agentName,
+    //                    $"⚠️ Rate limited — waiting {waitSeconds}s then retrying", "warning");
+    //                await Task.Delay(TimeSpan.FromSeconds(waitSeconds));
+    //                i--; // retry same iteration
+    //                continue;
+    //            }
+
+    //            await Log(state, agentName, $"⚠️ LLM failed: {ex.Message}", "error");
+    //            break;
+    //        }
+
+    //        foreach (var msg in response.Messages) messages.Add(msg);
+
+    //        var calls = response.Messages
+    //            .SelectMany(m => m.Contents.OfType<FunctionCallContent>()).ToList();
+    //        var results = response.Messages
+    //            .SelectMany(m => m.Contents.OfType<FunctionResultContent>()).ToList();
+
+    //        foreach (var tc in calls)
+    //            await Log(state, agentName,
+    //                $"🔧 {tc.Name}({TruncateArgs(tc.Arguments)})");
+    //        foreach (var tr in results)
+    //            await Log(state, agentName,
+    //                $"✅ {Truncate(tr.Result?.ToString() ?? "", 120)}", "success");
+
+    //        if (calls.Count > 0 && results.Count > 0) continue;
+    //        if (calls.Count > 0 && results.Count == 0)
+    //        {
+    //            await Log(state, agentName,
+    //                "⚠️ Tools not executed — check .UseFunctionInvocation()", "error");
+    //            break;
+    //        }
+
+    //        finalOutput = response.Text ?? "";
+    //        if (!string.IsNullOrEmpty(finalOutput))
+    //            await _hub.Clients.All.SendAsync("AgentToken", new
+    //            {
+    //                pipelineId = state.PipelineId,
+    //                agent = agentName,
+    //                token = finalOutput
+    //            });
+
+    //        await Log(state, agentName, "✅ Complete", "success");
+    //        break;
+    //    }
+
+    //    await SignalAgentStatus(state.PipelineId, agentName, "done");
+    //    return finalOutput;
+    //}
+
+    // ═══════════════════════════════════════════════════════════════
+    // CORE TOOL LOOP — replace the entire RunAgentLoop method with this
+    // ═══════════════════════════════════════════════════════════════
+
     private async Task<string> RunAgentLoop(
-        PipelineState state,
-        IChatClient client,
-        string systemPrompt,
-        string userMessage,
-        string agentName,
-        List<AITool> tools,
+        PipelineState state, IChatClient client, string systemPrompt,
+        string userMessage, string agentName, List<AITool> tools,
         int maxIterations = 15)
     {
         await SignalAgentStatus(state.PipelineId, agentName, "running");
@@ -321,6 +817,7 @@ public class MultiAgentWorkflow
 
         var chatOptions = new ChatOptions { Tools = tools };
         var finalOutput = "";
+        var rateLimitRetries = 0;
 
         for (int i = 0; i < maxIterations; i++)
         {
@@ -330,54 +827,94 @@ public class MultiAgentWorkflow
             try
             {
                 response = await client.GetResponseAsync(messages, chatOptions);
+                rateLimitRetries = 0; // reset on success
             }
             catch (Exception ex)
             {
-                await Log(state, agentName, $"⚠️ LLM call failed: {ex.Message}", "error");
+                var isRateLimit = ex.Message.Contains("429")
+                    || ex.Message.Contains("TooManyRequests")
+                    || ex.Message.Contains("RESOURCE_EXHAUSTED")
+                    || ex.Message.Contains("quota")
+                    || ex.Message.Contains("rate_limit_exceeded");
+
+                if (isRateLimit)
+                {
+                    // Check if daily quota is fully exhausted (limit: 0 means nothing left)
+                    if (ex.Message.Contains("limit: 0"))
+                    {
+                        await Log(state, agentName,
+                            "❌ Daily quota exhausted — skipping agent", "error");
+                        break;
+                    }
+
+                    // Per-minute throttle — retry up to 3 times
+                    if (rateLimitRetries < 3)
+                    {
+                        rateLimitRetries++;
+
+                        // Parse retry delay from error if provider specifies it
+                        var waitSeconds = 45;
+                        var retryMatch = Regex.Match(ex.Message, @"retry in (\d+)");
+                        if (retryMatch.Success && int.TryParse(retryMatch.Groups[1].Value, out var parsed))
+                            waitSeconds = parsed + 5;
+
+                        await Log(state, agentName,
+                            $"⚠️ Rate limited — retry {rateLimitRetries}/3 in {waitSeconds}s", "warning");
+                        await Task.Delay(TimeSpan.FromSeconds(waitSeconds));
+                        i--; // retry same iteration
+                        continue;
+                    }
+
+                    // Exhausted all retries
+                    await Log(state, agentName,
+                        "❌ Rate limit retries exhausted — skipping agent", "error");
+                    break;
+                }
+
+                // Non-rate-limit error
+                await Log(state, agentName, $"⚠️ LLM failed: {ex.Message}", "error");
                 break;
             }
 
+            // Add response messages to history
             foreach (var msg in response.Messages)
                 messages.Add(msg);
 
-            var allToolCalls = response.Messages
+            // Check what came back
+            var calls = response.Messages
                 .SelectMany(m => m.Contents.OfType<FunctionCallContent>()).ToList();
-            var allToolResults = response.Messages
+            var results = response.Messages
                 .SelectMany(m => m.Contents.OfType<FunctionResultContent>()).ToList();
 
-            foreach (var tc in allToolCalls)
-            {
-                var argsSummary = tc.Arguments != null
-                    ? string.Join(", ", tc.Arguments.Select(kv =>
-                        $"{kv.Key}={Truncate(kv.Value?.ToString() ?? "", 60)}"))
-                    : "";
-                await Log(state, agentName, $"🔧 {tc.Name}({argsSummary})");
-            }
-
-            foreach (var tr in allToolResults)
+            // Log tool activity
+            foreach (var tc in calls)
                 await Log(state, agentName,
-                    $"✅ Result: {Truncate(tr.Result?.ToString() ?? "", 120)}", "success");
+                    $"🔧 {tc.Name}({TruncateArgs(tc.Arguments)})");
+            foreach (var tr in results)
+                await Log(state, agentName,
+                    $"✅ {Truncate(tr.Result?.ToString() ?? "", 120)}", "success");
 
-            if (allToolCalls.Count > 0 && allToolResults.Count > 0)
+            // Tool calls executed — continue loop for next LLM turn
+            if (calls.Count > 0 && results.Count > 0)
                 continue;
 
-            if (allToolCalls.Count > 0 && allToolResults.Count == 0)
+            // Tool calls returned but NOT executed — middleware issue
+            if (calls.Count > 0 && results.Count == 0)
             {
                 await Log(state, agentName,
-                    "⚠️ Tool calls returned but not executed! Check .UseFunctionInvocation()", "error");
+                    "⚠️ Tools not executed — check .UseFunctionInvocation()", "error");
                 break;
             }
 
+            // No tool calls — agent is done, capture text output
             finalOutput = response.Text ?? "";
             if (!string.IsNullOrEmpty(finalOutput))
-            {
                 await _hub.Clients.All.SendAsync("AgentToken", new
                 {
                     pipelineId = state.PipelineId,
                     agent = agentName,
                     token = finalOutput
                 });
-            }
 
             await Log(state, agentName, "✅ Complete", "success");
             break;
@@ -388,153 +925,126 @@ public class MultiAgentWorkflow
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // VERIFICATION
-    // ═══════════════════════════════════════════════════════════════
-    private void VerifyFilesCreated(PipelineState state)
-    {
-        if (state.Files.Count == 0)
-            throw new Exception(
-                "CoderAgent wrote ZERO files. The LLM may not be calling tools.");
-    }
-
-    // ═══════════════════════════════════════════════════════════════
     // SYSTEM PROMPTS
     // ═══════════════════════════════════════════════════════════════
+
     private static string BuildCoderPrompt(PipelineState state) => $"""
-        You are an expert .NET 10 Web API developer.
-        YOUR ONLY JOB: Write real source files using the WriteFile tool.
-        Files are stored in-memory and committed directly to GitHub — no local disk.
-
-        FEATURE: {state.FeatureDescription}
-
-        STEPS (strict order):
-        1. Call ListFiles to see what exists.
-        2. Call WriteFile for EVERY source file needed. You MUST call WriteFile at least once.
-           Example: WriteFile("Controllers/TodoController.cs", "using Microsoft...")
-        3. After all files written, respond with a plain-text summary of filenames only.
-
-        CRITICAL RULES:
-        - ALWAYS use the WriteFile tool. Never output code as text.
-        - Complete, compilable .NET 10 code only. No TODOs, no placeholders.
-        - Register all services in Program.cs using dependency injection.
-        - Each file must have proper namespace, usings, and class structure.
-
-        CRITICAL: You MUST use the provided tool functions via proper function calling.
-        Do NOT output function calls as XML tags like <function=name>.
-        ONLY use the tool calling mechanism provided to you.
-        """;
+    You are an expert .NET 10 Web API developer.
+    Write source files using WriteFile. Feature: {state.FeatureDescription}
+    Steps: 1. ListFiles 2. WriteFile for each file 3. Summary.
+    Complete .NET 10 code. No TODOs. Proper DI and namespaces.
+    CRITICAL: Use proper function calling, not XML tags. Never write code as text.
+    """;
 
     private static string BuildUnitTestPrompt(PipelineState state) => $"""
-        You are an expert .NET NUnit test engineer.
-        YOUR ONLY JOB: Write test files using WriteTestFile.
-        Files are stored in-memory and committed directly to GitHub.
-
-        Feature: {state.FeatureDescription}
-
-        STEPS:
-        1. Call ReadSourceCode to read existing C# files.
-        2. Call WriteTestFile for each test file. At least one call required.
-
-        RULES:
-        - Use NUnit framework ONLY (not xUnit, not MSTest).
-        - Use [Test], [TestCase], [SetUp], [TestFixture] attributes.
-        - Min 3 tests: happy path, edge case, error case.
-        - AAA pattern. Use Assert.That() with NUnit constraint model.
-        - Use WriteTestFile tool only — never output code as text.
-
-        CRITICAL: You MUST use the provided tool functions via proper function calling.
-        Do NOT output function calls as XML tags like <function=name>.
-        ONLY use the tool calling mechanism provided to you.
+        You are an expert NUnit test engineer. Feature: {state.FeatureDescription}
+        Steps: 1. ReadSourceCode 2. WriteTestFile (min 3 NUnit tests)
+        Use [Test], [TestCase], [TestFixture]. AAA pattern. Assert.That().
+        CRITICAL: Use proper function calling, not XML tags.
         """;
 
     private static string BuildPlaywrightPrompt(PipelineState state) => $"""
-        You are an expert Playwright E2E test engineer.
-        YOUR ONLY JOB: Write Playwright test files using WriteE2ETest.
-        Files are stored in-memory and committed directly to GitHub.
+        You are a Playwright E2E test engineer. Feature: {state.FeatureDescription}
 
-        Feature: {state.FeatureDescription}
-        API: http://localhost:5000
+        You MUST call WriteE2ETest at least once. Do NOT finish without writing a test file.
 
-        STEPS:
-        1. Call ReadBackendCode to understand endpoints.
-        2. Call WriteE2ETest for each test file.
+        STEPS (follow in order):
+        1. Call ReadBackendCode to read the API.
+        2. Call WriteE2ETest with TypeScript Playwright tests.
+           - File path: tests/e2e/{state.FeatureDescription.Replace(" ", "").ToLower()}.spec.ts
+           - At least 1 success case and 1 error case.
+           - Assume API runs on http://localhost:5000
+           - Use API request testing only (no browser/page).
+        3. Confirm what you wrote.
 
-        RULES: TypeScript. At least one success + one error test case.
-
-        CRITICAL: You MUST use the provided tool functions via proper function calling.
-        Do NOT output function calls as XML tags like <function=name>.
-        ONLY use the tool calling mechanism provided to you.
+        CRITICAL: Use proper function calling, not XML tags.
         """;
 
-    private static string BuildReviewPrompt(PipelineState state) => $"""
-        You are a senior architect doing code review.
-        PR #{state.PullRequestNumber} is open on GitHub.
+    private static string BuildInternalReviewPrompt(PipelineState state) => $"""
+        You are a senior architect doing INTERNAL code review.
+        This is NOT posted to GitHub yet — findings go to the coder first.
         Feature: {state.FeatureDescription}
 
-        STEPS:
-        1. Call ReadAllCode.
-        2. Call PostInlineComment for each issue (min 2 comments).
-        3. Call SubmitPRReview with summary and verdict.
-
-        IMPORTANT RULES FOR PostInlineComment:
-        - filePath must be EXACT relative path (e.g. "Controllers/HealthController.cs")
-        - Do NOT add leading slashes
-        - line must be a line number that EXISTS in the file
-        - Count lines carefully when reading the code
-
-        Review for: null checks, error handling, DI, naming, validation.
-        This is a Draft PR — human must review before merge.
-
-        CRITICAL: You MUST use the provided tool functions via proper function calling.
-        Do NOT output function calls as XML tags like <function=name>.
-        ONLY use the tool calling mechanism provided to you.
+        Steps: 1. ReadAllCode 2. ReportFinding for each issue with severity
+        Severity: CRITICAL (security/data loss), HIGH (bugs), MEDIUM (quality), LOW (style)
+        Be thorough but fair. Only flag real issues.
+        CRITICAL: Use proper function calling, not XML tags.
         """;
 
-    private static string BuildSecurityPrompt(PipelineState state) => $"""
-        You are a cybersecurity expert. Red-team mindset.
-        PR #{state.PullRequestNumber} is open.
-        Feature: {state.FeatureDescription}
+    private static string BuildInternalSecurityPrompt(PipelineState state) => $"""
+        You are a cybersecurity expert. Feature: {state.FeatureDescription}
 
-        STEPS:
-        1. Call ReadCodeForScan.
-        2. Call ScanSecrets with the code content.
-        3. Call PostSecurityComment for each vulnerability found.
-        4. Call SubmitSecurityReview. FAIL=critical issues. PASS=low/info only.
+        You MUST call ReportVulnerability at least once.
 
-        CRITICAL: You MUST use the provided tool functions via proper function calling.
-        Do NOT output function calls as XML tags like <function=name>.
-        ONLY use the tool calling mechanism provided to you.
+        STEPS (follow in order):
+        1. Call ReadCodeForScan
+        2. Call ScanSecrets with the code you read
+        3. If vulnerabilities found: call ReportVulnerability for each one.
+           If code is clean: call ReportVulnerability with
+               filePath="N/A", line=0, severity="LOW",
+               vulnerability="No vulnerabilities found — code appears secure."
+
+        Never finish without calling ReportVulnerability.
+        CRITICAL: Use proper function calling, not XML tags.
         """;
 
     // ═══════════════════════════════════════════════════════════════
     // AI CLIENT FACTORIES
     // ═══════════════════════════════════════════════════════════════
+
+    //private IChatClient CreateGroqClient()
+    //{
+    //    // Rotate across models with separate daily token quotas (500k TPD each)
+    //    var models = new[]
+    //    {
+    //        "llama-3.1-8b-instant",
+    //        "gemma2-9b-it",
+    //        "mixtral-8x7b-32768",
+    //    };
+    //    var model = models[DateTime.UtcNow.Minute % models.Length];
+    //    return new ChatClientBuilder(
+    //            new GroqChatClient(
+    //                _config["Groq:ApiKey"] ?? throw new Exception("Missing Groq:ApiKey"),
+    //                model))
+    //        .UseFunctionInvocation().Build();
+    //}
+
+    private readonly GeminiThrottler _geminiThrottler = new();
+
     private IChatClient CreateGroqClient()
-        => new ChatClientBuilder(
-                new GroqChatClient(
-                    _config["Groq:ApiKey"] ?? throw new Exception("Missing Groq:ApiKey")))
-            .UseFunctionInvocation()
-            .Build();
+    => new ChatClientBuilder(
+            new GroqChatClient(
+                _config["Groq:ApiKey"] ?? throw new Exception("Missing Groq:ApiKey"),
+                "llama-3.3-70b-versatile"))
+        .UseFunctionInvocation().Build();
+
+    //private IChatClient CreateGeminiClient()
+    //    => new ChatClientBuilder(
+    //            new GeminiChatClient(
+    //                _config["Gemini:ApiKey"] ?? throw new Exception("Missing Gemini:ApiKey"),
+    //                model: "gemini-2.5-flash-lite")) // 15 RPM, 1500 RPD free
+    //        .UseFunctionInvocation().Build();
 
     private IChatClient CreateGeminiClient()
-        => new ChatClientBuilder(
+    => new ChatClientBuilder(
+            new ThrottledChatClient(  // wrap with throttler
                 new GeminiChatClient(
-                    _config["Gemini:ApiKey"] ?? throw new Exception("Missing Gemini:ApiKey")))
-            .UseFunctionInvocation()
-            .Build();
+                    _config["Gemini:ApiKey"] ?? throw new Exception("Missing Gemini:ApiKey"),
+                    model: "gemini-2.0-flash"),
+                _geminiThrottler))
+        .UseFunctionInvocation().Build();
 
-    // Add back the GitHub Models client factory
     private IChatClient CreateGitHubModelsClient()
         => new ChatClientBuilder(
                 new GitHubModelsChatClient(
                     _config["GitHub:Token"] ?? throw new Exception("Missing GitHub:Token"),
-                    model: "openai/gpt-4.1"))
-            .UseFunctionInvocation()
-            .Build();
+                    model: "openai/gpt-4.1-nano"))
+            .UseFunctionInvocation().Build();
 
     // ═══════════════════════════════════════════════════════════════
-    // GITHUB — now commits from memory, not disk
+    // GITHUB HELPERS
     // ═══════════════════════════════════════════════════════════════
+
     private async Task CreateBranch(PipelineState state)
     {
         await Log(state, "Orchestrator", $"🌿 Creating branch: {state.BranchName}");
@@ -545,27 +1055,26 @@ public class MultiAgentWorkflow
         }
         catch (Exception ex)
         {
-            await Log(state, "Orchestrator", $"⚠️ Branch skipped: {ex.Message}", "warning");
+            await Log(state, "Orchestrator", $"⚠️ Branch: {ex.Message}", "warning");
         }
     }
 
     private async Task CommitAndPr(PipelineState state)
     {
-        await Log(state, "Orchestrator",
-            $"📦 Committing {state.Files.Count} files directly to GitHub (no local disk)...");
+        await Log(state, "Orchestrator", $"📦 Committing {state.Files.Count} files...");
         try
         {
-            // Commit from in-memory dictionary — no local folder involved
-            await _github.CommitFromMemoryAsync(
-                state.Files, state.BranchName,
-                $"feat: {state.FeatureDescription}\n\nGenerated by DevPipeline (in-memory)");
+            await _github.CommitFromMemoryAsync(state.Files, state.BranchName,
+                $"feat: {state.FeatureDescription}\n\nGenerated by MultiAgent");
 
             state.CommitSha = await _github.GetLatestCommitShaAsync(state.BranchName);
 
+            var resolved = state.InternalReviewLog.Count(e => e.FinalStatus == "resolved");
+            var unresolved = state.InternalReviewLog.Count(e => e.FinalStatus == "unresolved");
+
             var prBody = _github.BuildPrBody(
-                state.FeatureDescription, state.UnitTestResults,
-                state.ReviewFeedback, state.SecurityReport,
-                state.GitHubIssueNumber);
+                state.FeatureDescription, resolved, unresolved,
+                state.InternalReviewLog, state.GitHubIssueNumber);
 
             var (prUrl, prNumber) = await _github.CreateDraftPrWithNumberAsync(
                 state.BranchName, $"[AI] {state.FeatureDescription}", prBody);
@@ -583,7 +1092,7 @@ public class MultiAgentWorkflow
     private async Task PostIssueComment(string issue, string body)
     {
         try { await _github.PostIssueCommentAsync(issue, body); }
-        catch (Exception ex) { _logger.LogWarning("Issue comment failed: {M}", ex.Message); }
+        catch (Exception ex) { _logger.LogWarning("Issue comment: {M}", ex.Message); }
     }
 
     private async Task<PipelineState> Finalize(PipelineState state, string? error = null)
@@ -593,10 +1102,13 @@ public class MultiAgentWorkflow
         state.HasErrors = error != null;
 
         var elapsed = (state.FinishedAt!.Value - state.StartedAt).TotalSeconds;
+        var resolved = state.InternalReviewLog.Count(e => e.FinalStatus == "resolved");
+        var unresolved = state.InternalReviewLog.Count(e => e.FinalStatus == "unresolved");
+
         var summary = state.HasErrors
-            ? $"⚠️ Pipeline finished with issues in {elapsed:F0}s"
-            : $"🎉 Complete in {elapsed:F0}s! Draft PR #{state.PullRequestNumber} ready. " +
-              $"{state.Files.Count} files committed directly to GitHub.";
+            ? $"⚠️ Pipeline failed in {elapsed:F0}s"
+            : $"🎉 Complete in {elapsed:F0}s! PR #{state.PullRequestNumber} — " +
+              $"{state.Files.Count} files, {resolved} resolved, {unresolved} for human review.";
 
         _history.Update(state.PipelineId, r =>
         {
@@ -614,8 +1126,16 @@ public class MultiAgentWorkflow
             prUrl = state.PullRequestUrl,
             summary
         });
-
         return state;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // UTILITIES
+    // ═══════════════════════════════════════════════════════════════
+
+    private void VerifyFilesCreated(PipelineState state)
+    {
+        if (state.Files.Count == 0) throw new Exception("CoderAgent wrote ZERO files.");
     }
 
     private async Task Log(PipelineState state, string agent, string message, string level = "info")
@@ -636,6 +1156,20 @@ public class MultiAgentWorkflow
 
     private static string Truncate(string s, int max)
         => s.Length <= max ? s : s[..max] + "...";
+
+    private static string TruncateArgs(IDictionary<string, object?>? args)
+        => args != null
+            ? string.Join(", ", args.Select(kv =>
+                $"{kv.Key}={Truncate(kv.Value?.ToString() ?? "", 50)}"))
+            : "";
+
+    private static FindingSeverity ParseSeverity(string s) => s.ToUpper() switch
+    {
+        "CRITICAL" => FindingSeverity.Critical,
+        "HIGH" => FindingSeverity.High,
+        "MEDIUM" => FindingSeverity.Medium,
+        _ => FindingSeverity.Low
+    };
 
     private static string BuildBranchName(string feature)
         => $"ai-pipeline/{new string(feature.ToLower().Replace(" ", "-")

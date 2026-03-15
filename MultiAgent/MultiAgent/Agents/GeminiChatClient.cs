@@ -45,13 +45,13 @@ public class GeminiChatClient : IChatClient
                 system_instruction = new { parts = new[] { new { text = sysText } } },
                 contents,
                 tools,
-                generationConfig = new { maxOutputTokens = options?.MaxOutputTokens ?? 8096 }
+                generationConfig = new { maxOutputTokens = options?.MaxOutputTokens ?? 16000 }
             }
             : new
             {
                 system_instruction = new { parts = new[] { new { text = sysText } } },
                 contents,
-                generationConfig = new { maxOutputTokens = options?.MaxOutputTokens ?? 8096 }
+                generationConfig = new { maxOutputTokens = options?.MaxOutputTokens ?? 16000 }
             };
 
         var body = JsonSerializer.Serialize(payload);
@@ -64,26 +64,58 @@ public class GeminiChatClient : IChatClient
             throw new Exception($"Gemini {resp.StatusCode}: {json}");
 
         using var doc = JsonDocument.Parse(json);
-        var candidate = doc.RootElement.GetProperty("candidates")[0].GetProperty("content");
-        var parts = candidate.GetProperty("parts");
+        var root = doc.RootElement;
 
-        // Check for function calls
+        // Guard: no candidates at all
+        if (!root.TryGetProperty("candidates", out var candidates)
+            || candidates.GetArrayLength() == 0)
+        {
+            // Could be a promptFeedback block (safety filter)
+            var feedback = root.TryGetProperty("promptFeedback", out var pf)
+                ? pf.GetRawText() : json;
+            throw new Exception($"Gemini returned no candidates: {feedback}");
+        }
+
+        var candidate = candidates[0];
+
+        // Check finishReason before parsing content
+        var finishReason = candidate.TryGetProperty("finishReason", out var fr)
+            ? fr.GetString() : null;
+
+        if (!candidate.TryGetProperty("content", out var content))
+            throw new Exception($"Gemini candidate has no content. finishReason={finishReason}. Raw={json[..Math.Min(json.Length, 300)]}");
+
+        if (!content.TryGetProperty("parts", out var parts)
+            || parts.GetArrayLength() == 0)
+            throw new Exception($"Gemini content has no parts. finishReason={finishReason}");
+
+        // Collect ALL function calls across parts (Gemini 2.5 can batch them)
+        var functionCalls = new List<AIContent>();
+        var textParts = new List<string>();
+
         foreach (var part in parts.EnumerateArray())
         {
             if (part.TryGetProperty("functionCall", out var fc))
             {
                 var fnName = fc.GetProperty("name").GetString()!;
-                var fnArgs = fc.GetProperty("args").GetRawText();
+                var fnArgs = fc.TryGetProperty("args", out var argsEl)
+                    ? argsEl.GetRawText() : "{}";
                 var args = JsonSerializer.Deserialize<Dictionary<string, object?>>(fnArgs)
                            ?? new Dictionary<string, object?>();
-                var callId = Guid.NewGuid().ToString();
-                return new ChatResponse(
-                    new ChatMessage(ChatRole.Assistant,
-                        new List<AIContent> { new FunctionCallContent(callId, fnName, args) }));
+                functionCalls.Add(new FunctionCallContent(Guid.NewGuid().ToString(), fnName, args));
             }
+            else if (part.TryGetProperty("text", out var textEl))
+            {
+                var t = textEl.GetString();
+                if (!string.IsNullOrEmpty(t)) textParts.Add(t);
+            }
+            // ignore unknown part types (e.g. executableCode, codeExecutionResult)
         }
 
-        var text = parts[0].GetProperty("text").GetString() ?? "";
+        if (functionCalls.Count > 0)
+            return new ChatResponse(new ChatMessage(ChatRole.Assistant, functionCalls));
+
+        var text = string.Join("", textParts);
         return new ChatResponse(new ChatMessage(ChatRole.Assistant, text));
     }
 
@@ -100,32 +132,38 @@ public class GeminiChatClient : IChatClient
     private static object[] ConvertMessages(List<ChatMessage> messages)
     {
         var result = new List<object>();
+
+        // Build a lookup of callId → function name from assistant messages
+        // so functionResponse can reference the correct name
+        var callIdToName = new Dictionary<string, string>();
+        foreach (var m in messages.Where(m => m.Role == ChatRole.Assistant))
+            foreach (var fc in m.Contents.OfType<FunctionCallContent>())
+                callIdToName[fc.CallId] = fc.Name;
+
         foreach (var m in messages.Where(m => m.Role != ChatRole.System))
         {
-            // Gemini expects functionResponse under role:"user"
+            // Tool results → role:user with functionResponse
             var toolResults = m.Contents.OfType<FunctionResultContent>().ToList();
             if (toolResults.Count > 0)
             {
-                foreach (var tr in toolResults)
-                    result.Add(new
+                // Group all results into a single user turn (Gemini prefers this)
+                result.Add(new
+                {
+                    role = "user",
+                    parts = toolResults.Select(tr => (object)new
                     {
-                        role = "user",
-                        parts = new object[]
+                        functionResponse = new
                         {
-                            new
-                            {
-                                functionResponse = new
-                                {
-                                    name = tr.CallId,
-                                    response = new { content = tr.Result?.ToString() ?? "" }
-                                }
-                            }
+                            // Gemini needs the function NAME here, not the call ID
+                            name = callIdToName.TryGetValue(tr.CallId, out var n) ? n : tr.CallId,
+                            response = new { content = tr.Result?.ToString() ?? "" }
                         }
-                    });
+                    }).ToArray()
+                });
                 continue;
             }
 
-            // Gemini expects functionCall under role:"model"
+            // Tool calls → role:model with functionCall
             var toolCalls = m.Contents.OfType<FunctionCallContent>().ToList();
             if (toolCalls.Count > 0)
             {
@@ -144,10 +182,14 @@ public class GeminiChatClient : IChatClient
                 continue;
             }
 
+            // Regular text message
+            var text = m.Text ?? "";
+            if (string.IsNullOrWhiteSpace(text)) continue; // skip empty turns
+
             result.Add(new
             {
                 role = m.Role == ChatRole.Assistant ? "model" : "user",
-                parts = new[] { new { text = m.Text ?? "" } }
+                parts = new[] { new { text } }
             });
         }
         return result.ToArray();

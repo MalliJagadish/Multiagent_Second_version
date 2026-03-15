@@ -11,12 +11,32 @@ namespace MultiAgent.Tools;
 public static class InMemoryFileTools
 {
     [Description("Write a file to the repository (in-memory). Creates the file for later commit to GitHub.")]
-    public static string WriteFile(
-        Dictionary<string, string> files, string relativePath, string content)
+    //public static string WriteFile(
+    //    Dictionary<string, string> files, string relativePath, string content)
+    //{
+    //    var cleanPath = relativePath.TrimStart('/').Replace("\\", "/");
+    //    files[cleanPath] = content;
+    //    return $"✅ Written: {cleanPath} ({content.Length} chars) [in-memory, {files.Count} files total]";
+    //}
+    public static string WriteFile(Dictionary<string, string> files, string path, string content)
     {
-        var cleanPath = relativePath.TrimStart('/').Replace("\\", "/");
-        files[cleanPath] = content;
-        return $"✅ Written: {cleanPath} ({content.Length} chars) [in-memory, {files.Count} files total]";
+        var clean = path
+            .Replace('\\', '/')
+            .TrimStart('/')
+            .Replace("//", "/")
+            .Replace("./", "")
+            .Trim();
+
+        // Remove any character GitHub doesn't allow in tree paths
+        clean = string.Concat(clean.Select(c =>
+            char.IsLetterOrDigit(c) || c is '/' or '.' or '-' or '_' ? c : '-'));
+
+        // Collapse any double dashes or slashes created by replacements
+        while (clean.Contains("--")) clean = clean.Replace("--", "-");
+        while (clean.Contains("//")) clean = clean.Replace("//", "/");
+
+        files[clean] = content;
+        return $"✅ Written: {clean} ({content.Length} chars) [in-memory, {files.Count} files total]";
     }
 
     [Description("List all files currently staged in memory.")]

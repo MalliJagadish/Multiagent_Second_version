@@ -1,14 +1,10 @@
-﻿using System.Net.Http.Headers;
+﻿using MultiAgent.Models;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
 namespace MultiAgent.Services;
 
-/// <summary>
-/// All GitHub API operations for the pipeline.
-/// Protocol: HTTPS REST — api.github.com
-/// Auth: Personal Access Token (PAT) via Bearer header
-/// </summary>
 public class GitHubService
 {
     private readonly HttpClient _http;
@@ -32,7 +28,10 @@ public class GitHubService
         _http.DefaultRequestHeaders.Add("X-GitHub-Api-Version", "2022-11-28");
     }
 
-    /// <summary>Creates a new branch from main for this pipeline run.</summary>
+    // ═══════════════════════════════════════════════════════════════
+    // BRANCH
+    // ═══════════════════════════════════════════════════════════════
+
     public async Task<string> CreateBranchAsync(string branchName)
     {
         var mainRef = await GetAsync($"repos/{_repoOwner}/{_repoName}/git/ref/heads/main");
@@ -48,87 +47,16 @@ public class GitHubService
         return branchName;
     }
 
-    //// <summary>Commits all changed files in repoPath to the branch on GitHub.</summary>
-    //public async Task CommitFilesAsync(string repoPath, string branchName, string commitMessage)
-    //{
-    //    // Ensure the repo path exists — create it if the agent somehow missed it
-    //    Directory.CreateDirectory(repoPath);
+    // ═══════════════════════════════════════════════════════════════
+    // COMMIT FROM MEMORY (no local disk)
+    // ═══════════════════════════════════════════════════════════════
 
-    //    var files = Directory.GetFiles(repoPath, "*.*", SearchOption.AllDirectories)
-    //        .Where(f => !f.Contains("\\bin\\") && !f.Contains("\\obj\\")
-    //                 && !f.Contains("\\.git\\"))
-    //        .ToList();
-
-    //    if (!files.Any())
-    //    {
-    //        _logger.LogWarning("No files found in {RepoPath} — nothing to commit", repoPath);
-    //        throw new Exception(
-    //            $"No files were written to {repoPath}. " +
-    //            $"The Coder agent may have failed silently. Check live logs for WriteFile calls.");
-    //    }
-
-    //    var treeItems = new List<object>();
-    //    foreach (var file in files)
-    //    {
-    //        var content = await File.ReadAllTextAsync(file);
-    //        var relativePath = Path.GetRelativePath(repoPath, file).Replace("\\", "/");
-
-    //        var blobResp = await PostAsync($"repos/{_repoOwner}/{_repoName}/git/blobs", new
-    //        {
-    //            content,
-    //            encoding = "utf-8"
-    //        });
-    //        var blobSha = blobResp.GetProperty("sha").GetString()!;
-
-    //        treeItems.Add(new
-    //        {
-    //            path = relativePath,
-    //            mode = "100644",
-    //            type = "blob",
-    //            sha = blobSha
-    //        });
-    //    }
-
-    //    var branchInfo = await GetAsync($"repos/{_repoOwner}/{_repoName}/git/ref/heads/{branchName}");
-    //    var commitSha = branchInfo.GetProperty("object").GetProperty("sha").GetString()!;
-    //    var commitInfo = await GetAsync($"repos/{_repoOwner}/{_repoName}/git/commits/{commitSha}");
-    //    var treeSha = commitInfo.GetProperty("tree").GetProperty("sha").GetString()!;
-
-    //    var newTree = await PostAsync($"repos/{_repoOwner}/{_repoName}/git/trees", new
-    //    {
-    //        base_tree = treeSha,
-    //        tree = treeItems
-    //    });
-    //    var newTreeSha = newTree.GetProperty("sha").GetString()!;
-
-    //    var newCommit = await PostAsync($"repos/{_repoOwner}/{_repoName}/git/commits", new
-    //    {
-    //        message = commitMessage,
-    //        tree = newTreeSha,
-    //        parents = new[] { commitSha }
-    //    });
-    //    var newCommitSha = newCommit.GetProperty("sha").GetString()!;
-
-    //    await PatchAsync($"repos/{_repoOwner}/{_repoName}/git/refs/heads/{branchName}", new
-    //    {
-    //        sha = newCommitSha
-    //    });
-
-    //    _logger.LogInformation("Committed {Count} files to {Branch}", files.Count, branchName);
-    //}
-
-
-    /// <summary>
-    /// Commits files directly to GitHub from an in-memory dictionary.
-    /// No local disk involved — creates blobs, tree, and commit via the Git Data API.
-    /// </summary>
     public async Task CommitFromMemoryAsync(
         Dictionary<string, string> files, string branchName, string commitMessage)
     {
         if (files.Count == 0)
-            throw new Exception("No files to commit. The Coder agent produced no output.");
+            throw new Exception("No files to commit.");
 
-        // 1. Create a blob for each file
         var treeItems = new List<object>();
         foreach (var (relativePath, content) in files)
         {
@@ -146,45 +74,37 @@ public class GitHubService
             });
         }
 
-        // 2. Get current branch HEAD
         var branchInfo = await GetAsync(
             $"repos/{_repoOwner}/{_repoName}/git/ref/heads/{branchName}");
-        var headCommitSha = branchInfo.GetProperty("object").GetProperty("sha").GetString()!;
+        var headSha = branchInfo.GetProperty("object").GetProperty("sha").GetString()!;
 
-        // 3. Get the tree SHA of the current HEAD commit
         var commitInfo = await GetAsync(
-            $"repos/{_repoOwner}/{_repoName}/git/commits/{headCommitSha}");
+            $"repos/{_repoOwner}/{_repoName}/git/commits/{headSha}");
         var baseTreeSha = commitInfo.GetProperty("tree").GetProperty("sha").GetString()!;
 
-        // 4. Create new tree (inherits existing files from base_tree)
         var newTree = await PostAsync(
             $"repos/{_repoOwner}/{_repoName}/git/trees",
             new { base_tree = baseTreeSha, tree = treeItems });
         var newTreeSha = newTree.GetProperty("sha").GetString()!;
 
-        // 5. Create commit pointing to new tree
         var newCommit = await PostAsync(
             $"repos/{_repoOwner}/{_repoName}/git/commits",
-            new
-            {
-                message = commitMessage,
-                tree = newTreeSha,
-                parents = new[] { headCommitSha }
-            });
+            new { message = commitMessage, tree = newTreeSha, parents = new[] { headSha } });
         var newCommitSha = newCommit.GetProperty("sha").GetString()!;
 
-        // 6. Update branch ref to point to new commit
         await PatchAsync(
             $"repos/{_repoOwner}/{_repoName}/git/refs/heads/{branchName}",
             new { sha = newCommitSha });
 
-        _logger.LogInformation(
-            "Committed {Count} files to {Branch} (in-memory, no local disk)",
-            files.Count, branchName);
+        _logger.LogInformation("Committed {Count} files to {Branch} (in-memory)", files.Count, branchName);
     }
 
-    /// <summary>Opens a Draft PR from the feature branch to main.</summary>
-    public async Task<string> CreateDraftPrAsync(string branchName, string title, string body)
+    // ═══════════════════════════════════════════════════════════════
+    // PULL REQUESTS
+    // ═══════════════════════════════════════════════════════════════
+
+    public async Task<(string url, int number)> CreateDraftPrWithNumberAsync(
+        string branchName, string title, string body)
     {
         var pr = await PostAsync($"repos/{_repoOwner}/{_repoName}/pulls", new
         {
@@ -195,139 +115,317 @@ public class GitHubService
             draft = true
         });
 
-        var prUrl = pr.GetProperty("html_url").GetString()!;
-        _logger.LogInformation("Draft PR created: {Url}", prUrl);
-        return prUrl;
-    }
-
-    /// <summary>
-    /// Opens a Draft PR and returns both the URL and PR number.
-    /// ALWAYS creates as draft=true — pipeline never auto-merges.
-    /// Human must manually review inline comments and merge.
-    /// </summary>
-    public async Task<(string url, int number)> CreateDraftPrWithNumberAsync(
-        string branchName, string title, string body)
-    {
-        var pr = await PostAsync($"repos/{_repoOwner}/{_repoName}/pulls", new
-        {
-            title,
-            body,
-            head = branchName,
-            base_ = "main",
-            draft = true          // always draft — human reviews before merge
-        });
-
         var url = pr.GetProperty("html_url").GetString()!;
         var number = pr.GetProperty("number").GetInt32();
-        _logger.LogInformation("Draft PR #{Number} created: {Url}", number, url);
+        _logger.LogInformation("Draft PR #{Number}: {Url}", number, url);
         return (url, number);
     }
 
-    /// <summary>
-    /// Posts an inline review comment on a specific file+line in a PR.
-    /// commitSha must be the HEAD commit of the PR branch.
-    /// </summary>
-    //public async Task PostPRInlineCommentAsync(
-    //    int prNumber, string commitSha, string filePath, int line, string comment)
-    //{
-    //    await PostAsync($"repos/{_repoOwner}/{_repoName}/pulls/{prNumber}/comments", new
-    //    {
-    //        body = comment,
-    //        commit_id = commitSha,
-    //        path = filePath,
-    //        line,
-    //        side = "RIGHT"
-    //    });
-    //    _logger.LogInformation("Inline comment posted on PR #{PR} {File}:{Line}", prNumber, filePath, line);
-    //}
-    public async Task PostPRInlineCommentAsync(
-    int prNumber, string commitSha, string filePath, int line, string comment)
+    public async Task<string> GetLatestCommitShaAsync(string branchName)
     {
-        try
-        {
-            // Try posting as a line-level comment first
-            await PostAsync($"repos/{_repoOwner}/{_repoName}/pulls/{prNumber}/comments", new
+        var info = await GetAsync(
+            $"repos/{_repoOwner}/{_repoName}/git/ref/heads/{branchName}");
+        return info.GetProperty("object").GetProperty("sha").GetString()!;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // PR COMMENTS — post inline and return the node_id for resolving
+    // ═══════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Posts an inline review comment and returns (commentId, nodeId).
+    /// nodeId is needed by the GraphQL API to resolve the thread.
+    /// </summary>
+    public async Task<(int commentId, string nodeId)> PostInlineCommentWithNodeIdAsync(
+        int prNumber, string commitSha, string filePath, int line, string comment)
+    {
+        var result = await PostAsync(
+            $"repos/{_repoOwner}/{_repoName}/pulls/{prNumber}/comments",
+            new
             {
                 body = comment,
                 commit_id = commitSha,
-                path = filePath.TrimStart('/'),
+                path = filePath,
                 line,
                 side = "RIGHT"
             });
-            _logger.LogInformation("Inline comment on PR #{PR} {File}:{Line}", prNumber, filePath, line);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning("Line comment failed ({Msg}), posting as file-level comment", ex.Message);
-            try
-            {
-                // Fallback: post as a file-level comment (appears on the file, not a specific line)
-                await PostAsync($"repos/{_repoOwner}/{_repoName}/pulls/{prNumber}/comments", new
-                {
-                    body = $"**Line {line}:** {comment}",
-                    commit_id = commitSha,
-                    path = filePath.TrimStart('/'),
-                    subject_type = "file"
-                });
-            }
-            catch (Exception ex2)
-            {
-                _logger.LogWarning("File comment also failed: {Msg}, posting as general PR comment", ex2.Message);
-                // Last fallback: post as a regular PR review comment
-                await PostAsync($"repos/{_repoOwner}/{_repoName}/pulls/{prNumber}/reviews", new
-                {
-                    body = $"**{filePath}:{line}** — {comment}",
-                    @event = "COMMENT"
-                });
-            }
-        }
+
+        var commentId = result.GetProperty("id").GetInt32();
+        var nodeId = result.GetProperty("node_id").GetString()!;
+        _logger.LogInformation("Comment {Id} on PR #{PR} {File}:{Line}", commentId, prNumber, filePath, line);
+        return (commentId, nodeId);
     }
 
     /// <summary>
-    /// Posts a top-level PR review (summary comment + APPROVE / REQUEST_CHANGES / COMMENT).
-    /// event_: "APPROVE", "REQUEST_CHANGES", or "COMMENT"
+    /// Fallback: post as a file-level comment when the line doesn't exist in the diff.
     /// </summary>
+    public async Task<(int commentId, string nodeId)> PostFileCommentWithNodeIdAsync(
+        int prNumber, string commitSha, string filePath, string comment)
+    {
+        var result = await PostAsync(
+            $"repos/{_repoOwner}/{_repoName}/pulls/{prNumber}/comments",
+            new
+            {
+                body = comment,
+                commit_id = commitSha,
+                path = filePath,
+                subject_type = "file"
+            });
+
+        var commentId = result.GetProperty("id").GetInt32();
+        var nodeId = result.GetProperty("node_id").GetString()!;
+        return (commentId, nodeId);
+    }
+
+    /// <summary>
+    /// Resolves a PR review thread using the GitHub GraphQL API.
+    ///
+    /// The REST API doesn't support resolving threads — only GraphQL can do it.
+    /// We need the thread's node_id. A review comment's node_id points to the
+    /// PullRequestReviewComment, but we need the PullRequestReviewThread.
+    ///
+    /// Strategy: query the comment's node_id to get its parent thread, then resolve.
+    /// </summary>
+    public async Task ResolveThreadByCommentNodeIdAsync(string commentNodeId)
+    {
+        // Step 1: Find the thread node_id from the comment node_id
+        var findThreadQuery = new
+        {
+            query = @"
+                query($commentId: ID!) {
+                    node(id: $commentId) {
+                        ... on PullRequestReviewComment {
+                            pullRequestReview {
+                                pullRequest {
+                                    reviewThreads(last: 100) {
+                                        nodes {
+                                            id
+                                            isResolved
+                                            comments(first: 1) {
+                                                nodes { id }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }",
+            variables = new { commentId = commentNodeId }
+        };
+
+        var findResult = await PostGraphqlAsync(findThreadQuery);
+
+        // Parse to find the thread that contains our comment
+        string? threadNodeId = null;
+        try
+        {
+            var threads = findResult
+                .GetProperty("data")
+                .GetProperty("node")
+                .GetProperty("pullRequestReview")
+                .GetProperty("pullRequest")
+                .GetProperty("reviewThreads")
+                .GetProperty("nodes");
+
+            foreach (var thread in threads.EnumerateArray())
+            {
+                var comments = thread.GetProperty("comments").GetProperty("nodes");
+                foreach (var c in comments.EnumerateArray())
+                {
+                    if (c.GetProperty("id").GetString() == commentNodeId)
+                    {
+                        threadNodeId = thread.GetProperty("id").GetString();
+                        break;
+                    }
+                }
+                if (threadNodeId != null) break;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning("Could not find thread for comment {NodeId}: {Msg}",
+                commentNodeId, ex.Message);
+        }
+
+        // Fallback: if we can't find via nested query, try direct thread resolution
+        // by posting the comment as part of a review and resolving that thread
+        if (threadNodeId == null)
+        {
+            _logger.LogWarning(
+                "Thread not found for {NodeId} — trying alternative resolution", commentNodeId);
+            await ResolveThreadAlternativeAsync(commentNodeId);
+            return;
+        }
+
+        // Step 2: Resolve the thread
+        var resolveQuery = new
+        {
+            query = @"
+                mutation($threadId: ID!) {
+                    resolveReviewThread(input: { threadId: $threadId }) {
+                        thread { isResolved }
+                    }
+                }",
+            variables = new { threadId = threadNodeId }
+        };
+
+        await PostGraphqlAsync(resolveQuery);
+        _logger.LogInformation("Thread {ThreadId} resolved", threadNodeId);
+    }
+
+    /// <summary>
+    /// Alternative approach: list all threads on the PR and match by file+line.
+    /// Used when the nested GraphQL query doesn't find the thread.
+    /// </summary>
+    public async Task ResolveThreadForCommentAsync(int prNumber, string filePath, int line)
+    {
+        var prNodeQuery = new
+        {
+            query = @"
+                query($owner: String!, $repo: String!, $prNumber: Int!) {
+                    repository(owner: $owner, name: $repo) {
+                        pullRequest(number: $prNumber) {
+                            reviewThreads(last: 100) {
+                                nodes {
+                                    id
+                                    isResolved
+                                    path
+                                    line
+                                }
+                            }
+                        }
+                    }
+                }",
+            variables = new { owner = _repoOwner, repo = _repoName, prNumber }
+        };
+
+        var result = await PostGraphqlAsync(prNodeQuery);
+        try
+        {
+            var threads = result
+                .GetProperty("data")
+                .GetProperty("repository")
+                .GetProperty("pullRequest")
+                .GetProperty("reviewThreads")
+                .GetProperty("nodes");
+
+            foreach (var thread in threads.EnumerateArray())
+            {
+                var threadPath = thread.GetProperty("path").GetString() ?? "";
+                var threadLine = thread.TryGetProperty("line", out var l) ? l.GetInt32() : 0;
+                var isResolved = thread.GetProperty("isResolved").GetBoolean();
+
+                if (threadPath == filePath && threadLine == line && !isResolved)
+                {
+                    var threadId = thread.GetProperty("id").GetString()!;
+                    var resolveQuery = new
+                    {
+                        query = @"
+                            mutation($threadId: ID!) {
+                                resolveReviewThread(input: { threadId: $threadId }) {
+                                    thread { isResolved }
+                                }
+                            }",
+                        variables = new { threadId }
+                    };
+                    await PostGraphqlAsync(resolveQuery);
+                    _logger.LogInformation("Resolved thread on {File}:{Line}", filePath, line);
+                    return;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning("Failed to resolve thread for {File}:{Line}: {Msg}",
+                filePath, line, ex.Message);
+        }
+    }
+
+    private async Task ResolveThreadAlternativeAsync(string commentNodeId)
+    {
+        // Directly try to resolve using the comment's node_id as if it were a thread
+        // This works in some GitHub API versions
+        var resolveQuery = new
+        {
+            query = @"
+                mutation($threadId: ID!) {
+                    resolveReviewThread(input: { threadId: $threadId }) {
+                        thread { isResolved }
+                    }
+                }",
+            variables = new { threadId = commentNodeId }
+        };
+
+        try
+        {
+            await PostGraphqlAsync(resolveQuery);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning("Alternative resolve failed for {Id}: {Msg}",
+                commentNodeId, ex.Message);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // PR REVIEWS
+    // ═══════════════════════════════════════════════════════════════
+
+    //public async Task PostPRReviewAsync(int prNumber, string body, string reviewEvent = "COMMENT")
+    //{
+    //    await PostAsync($"repos/{_repoOwner}/{_repoName}/pulls/{prNumber}/reviews", new
+    //    {
+    //        body,
+    //        @event = reviewEvent
+    //    });
+    //    _logger.LogInformation("PR review on #{PR}: {Event}", prNumber, reviewEvent);
+    //}
+
     public async Task PostPRReviewAsync(int prNumber, string body, string reviewEvent = "COMMENT")
     {
+        if (reviewEvent == "REQUEST_CHANGES" || reviewEvent == "APPROVE")
+            reviewEvent = "COMMENT";
+
         await PostAsync($"repos/{_repoOwner}/{_repoName}/pulls/{prNumber}/reviews", new
         {
             body,
-            @event = reviewEvent   // "APPROVE" | "REQUEST_CHANGES" | "COMMENT"
+            @event = reviewEvent
         });
-        _logger.LogInformation("PR review posted on #{PR}: {Event}", prNumber, reviewEvent);
+        _logger.LogInformation("PR review on #{PR}: {Event}", prNumber, reviewEvent);
     }
 
-    /// <summary>Gets the latest commit SHA on a branch — needed for inline comments.</summary>
-    public async Task<string> GetLatestCommitShaAsync(string branchName)
-    {
-        var branchInfo = await GetAsync($"repos/{_repoOwner}/{_repoName}/git/ref/heads/{branchName}");
-        return branchInfo.GetProperty("object").GetProperty("sha").GetString()!;
-    }
+    // ═══════════════════════════════════════════════════════════════
+    // ISSUES
+    // ═══════════════════════════════════════════════════════════════
 
-    /// <summary>Posts a comment to a GitHub Issue.</summary>
     public async Task PostIssueCommentAsync(string issueNumber, string markdown)
         => await PostAsync(
             $"repos/{_repoOwner}/{_repoName}/issues/{issueNumber}/comments",
             new { body = markdown });
 
-    /// <summary>Validates GitHub webhook HMAC-SHA256 signature.</summary>
-    public bool ValidateWebhookSignature(string payload, string signatureHeader, string secret)
+    // ═══════════════════════════════════════════════════════════════
+    // PR BODY BUILDER
+    // ═══════════════════════════════════════════════════════════════
+
+    public string BuildPrBody(string feature, int resolved, int unresolved,
+        List<ReviewLogEntry> reviewLog, string? issueNumber)
     {
-        if (string.IsNullOrEmpty(signatureHeader)) return false;
+        var logTable = new StringBuilder();
+        logTable.AppendLine("| Status | Round | Agent | File | Severity | Detail |");
+        logTable.AppendLine("|---|---|---|---|---|---|");
+        foreach (var e in reviewLog)
+        {
+            var icon = e.FinalStatus == "resolved" ? "✅" : "⚠️";
+            var detail = e.FinalStatus == "resolved"
+                ? $"Resolved: {Truncate(e.CoderResponse, 80)}"
+                : $"Needs human review";
+            logTable.AppendLine(
+                $"| {icon} | {e.Round} | {e.Finding.Source} | " +
+                $"`{e.Finding.FilePath}:{e.Finding.Line}` | " +
+                $"{e.Finding.Severity} | {detail} |");
+        }
 
-        using var hmac = new System.Security.Cryptography.HMACSHA256(
-            Encoding.UTF8.GetBytes(secret));
-        var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(payload));
-        var expected = "sha256=" + Convert.ToHexString(hash).ToLower();
-
-        return signatureHeader.ToLower() == expected;
-    }
-
-    /// <summary>Builds the markdown body for the Draft PR.</summary>
-    public string BuildPrBody(string feature, string tests, string review,
-        string security, string? issueNumber)
-    {
-        var safe = (string s) => s[..Math.Min(600, s.Length)];
         return $"""
             ## 🤖 AI Pipeline — Auto-generated PR
 
@@ -336,43 +434,56 @@ public class GitHubService
 
             ---
 
-            ## Pipeline Results
+            ## Internal Review Summary
 
-            | Agent | Model | Status |
-            |---|---|---|
-            | 🧑‍💻 Coder | Groq Llama 3.3 70B | ✅ Done |
-            | 🧪 Unit Tests | Groq Llama 3.3 70B | ✅ Done |
-            | 🎭 Playwright | Gemini 2.0 Flash | ✅ Done |
-            | 👁️ Code Review | GitHub GPT-4.1 | ✅ Done |
-            | 🔒 Security | Gemini 2.0 Flash | ✅ Done |
+            | Metric | Count |
+            |---|---|
+            | ✅ Resolved internally | {resolved} |
+            | ⚠️ Needs human review | {unresolved} |
 
-            ---
-
-            ## 🧪 Unit Test Results
-            ```
-            {safe(tests)}
-            ```
-
-            ## 👁️ Code Review
-            {safe(review)}
-
-            ## 🔒 Security Report
-            {safe(security)}
+            {(unresolved == 0
+                ? "> ✅ All findings were resolved during internal AI review. Resolved comments are collapsed in Files Changed."
+                : "> ⚠️ Unresolved items are open as inline comments. Resolved items are collapsed.")}
 
             ---
 
-            > ⚠️ AI-generated. Human review required before merging.
+            <details>
+            <summary>📋 Full internal review log ({resolved + unresolved} findings)</summary>
+
+            {logTable}
+
+            </details>
+
+            ---
+
+            > 🤖 AI-generated. Internal review completed. Human review required before merging.
             """;
     }
 
-    // ── HTTP helpers ──────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════
+    // WEBHOOK SIGNATURE
+    // ═══════════════════════════════════════════════════════════════
+
+    public bool ValidateWebhookSignature(string payload, string signatureHeader, string secret)
+    {
+        if (string.IsNullOrEmpty(signatureHeader)) return false;
+        using var hmac = new System.Security.Cryptography.HMACSHA256(
+            Encoding.UTF8.GetBytes(secret));
+        var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(payload));
+        var expected = "sha256=" + Convert.ToHexString(hash).ToLower();
+        return signatureHeader.ToLower() == expected;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // HTTP HELPERS
+    // ═══════════════════════════════════════════════════════════════
 
     private async Task<JsonElement> GetAsync(string path)
     {
         var resp = await _http.GetAsync($"https://api.github.com/{path}");
         var json = await resp.Content.ReadAsStringAsync();
         if (!resp.IsSuccessStatusCode)
-            throw new Exception($"GitHub GET {path} failed: {json}");
+            throw new Exception($"GitHub GET {path}: {json}");
         return JsonDocument.Parse(json).RootElement;
     }
 
@@ -385,10 +496,9 @@ public class GitHubService
         var resp = await _http.PostAsync(
             $"https://api.github.com/{path}",
             new StringContent(json, Encoding.UTF8, "application/json"));
-
         var respJson = await resp.Content.ReadAsStringAsync();
         if (!resp.IsSuccessStatusCode)
-            throw new Exception($"GitHub POST {path} failed: {respJson}");
+            throw new Exception($"GitHub POST {path}: {respJson}");
         return JsonDocument.Parse(respJson).RootElement;
     }
 
@@ -402,4 +512,19 @@ public class GitHubService
         if (!resp.IsSuccessStatusCode)
             throw new Exception($"GitHub PATCH {path} failed");
     }
+
+    private async Task<JsonElement> PostGraphqlAsync(object body)
+    {
+        var json = JsonSerializer.Serialize(body);
+        var resp = await _http.PostAsync(
+            "https://api.github.com/graphql",
+            new StringContent(json, Encoding.UTF8, "application/json"));
+        var respJson = await resp.Content.ReadAsStringAsync();
+        if (!resp.IsSuccessStatusCode)
+            throw new Exception($"GitHub GraphQL: {respJson}");
+        return JsonDocument.Parse(respJson).RootElement;
+    }
+
+    private static string Truncate(string s, int max)
+        => s.Length <= max ? s : s[..max] + "...";
 }
