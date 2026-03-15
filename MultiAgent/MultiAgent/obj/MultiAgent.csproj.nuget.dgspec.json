@@ -570,29 +570,21 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "dependencies": {
-            "Microsoft.Agents.AI": {
+            "Microsoft.Extensions.AI": {
               "target": "Package",
-              "version": "[1.0.0-rc4, )"
+              "version": "[9.6.0, )"
             },
-            "Microsoft.Agents.AI.Hosting.A2A.AspNetCore": {
+            "Microsoft.Extensions.AI.Abstractions": {
               "target": "Package",
-              "version": "[1.0.0-preview.260311.1, )"
+              "version": "[9.6.0, )"
             },
-            "Microsoft.Agents.AI.OpenAI": {
+            "Swashbuckle.AspNetCore": {
               "target": "Package",
-              "version": "[1.0.0-rc4, )"
+              "version": "[10.1.5, )"
             },
-            "Microsoft.Agents.AI.Workflows": {
+            "Swashbuckle.AspNetCore.SwaggerGen": {
               "target": "Package",
-              "version": "[1.0.0-rc4, )"
-            },
-            "Microsoft.AspNetCore.OpenApi": {
-              "target": "Package",
-              "version": "[10.0.2, )"
-            },
-            "ModelContextProtocol": {
-              "target": "Package",
-              "version": "[1.1.0, )"
+              "version": "[10.1.5, )"
             }
           },
           "imports": [

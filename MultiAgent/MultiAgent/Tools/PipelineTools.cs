@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Text;
 
-namespace DevPipeline.Tools;
+namespace MultiAgent.Tools;
 
 /// <summary>
 /// MCP Tools — the "hands" of each agent.

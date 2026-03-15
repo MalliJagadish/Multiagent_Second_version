@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "MultiAgent.AppHost\\MultiAgent.AppHost.csproj",
+        "Action": "StartWithoutDebugging"
+      },
+      {
+        "Path": "MultiAgent\\MultiAgent.csproj",
+        "Action": "StartWithoutDebugging"
+      }
+    ]
+  }
+]

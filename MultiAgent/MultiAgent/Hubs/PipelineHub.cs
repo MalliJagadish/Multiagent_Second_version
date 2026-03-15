@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 
-namespace DevPipeline.Hubs;
+namespace MultiAgent.Hubs;
 
 /// <summary>
 /// SignalR Hub — real-time WebSocket channel between API and Vue dashboard.

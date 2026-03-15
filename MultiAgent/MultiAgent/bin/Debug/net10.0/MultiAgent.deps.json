@@ -8,203 +8,32 @@
     ".NETCoreApp,Version=v10.0": {
       "MultiAgent/1.0.0": {
         "dependencies": {
-          "Microsoft.Agents.AI": "1.0.0-rc4",
-          "Microsoft.Agents.AI.Hosting.A2A.AspNetCore": "1.0.0-preview.260311.1",
-          "Microsoft.Agents.AI.OpenAI": "1.0.0-rc4",
-          "Microsoft.Agents.AI.Workflows": "1.0.0-rc4",
-          "Microsoft.AspNetCore.OpenApi": "10.0.2",
-          "ModelContextProtocol": "1.1.0",
-          "MultiAgent.ServiceDefaults": "1.0.0"
+          "Microsoft.Extensions.AI": "9.6.0",
+          "Microsoft.Extensions.AI.Abstractions": "9.6.0",
+          "MultiAgent.ServiceDefaults": "1.0.0",
+          "Swashbuckle.AspNetCore": "10.1.5",
+          "Swashbuckle.AspNetCore.SwaggerGen": "10.1.5"
         },
         "runtime": {
           "MultiAgent.dll": {}
         }
       },
-      "A2A/0.3.3-preview": {
+      "Microsoft.Extensions.AI/9.6.0": {
         "dependencies": {
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0"
+          "Microsoft.Extensions.AI.Abstractions": "9.6.0"
         },
         "runtime": {
-          "lib/net9.0/A2A.dll": {
-            "assemblyVersion": "0.3.3.0",
-            "fileVersion": "0.3.3.0"
+          "lib/net9.0/Microsoft.Extensions.AI.dll": {
+            "assemblyVersion": "9.6.0.0",
+            "fileVersion": "9.600.25.31002"
           }
         }
       },
-      "A2A.AspNetCore/0.3.3-preview": {
-        "dependencies": {
-          "A2A": "0.3.3-preview"
-        },
+      "Microsoft.Extensions.AI.Abstractions/9.6.0": {
         "runtime": {
-          "lib/net9.0/A2A.AspNetCore.dll": {
-            "assemblyVersion": "0.3.3.0",
-            "fileVersion": "0.3.3.0"
-          }
-        }
-      },
-      "Google.Protobuf/3.30.2": {
-        "runtime": {
-          "lib/net5.0/Google.Protobuf.dll": {
-            "assemblyVersion": "3.30.2.0",
-            "fileVersion": "3.30.2.0"
-          }
-        }
-      },
-      "Microsoft.Agents.AI/1.0.0-rc4": {
-        "dependencies": {
-          "Microsoft.Agents.AI.Abstractions": "1.0.0-rc4",
-          "Microsoft.Extensions.AI": "10.3.0",
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0",
-          "Microsoft.Extensions.VectorData.Abstractions": "9.7.0",
-          "Microsoft.ML.Tokenizers": "2.0.0"
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.Agents.AI.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
-      },
-      "Microsoft.Agents.AI.Abstractions/1.0.0-rc4": {
-        "dependencies": {
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0"
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.Agents.AI.Abstractions.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
-      },
-      "Microsoft.Agents.AI.Hosting/1.0.0-preview.260311.1": {
-        "dependencies": {
-          "Microsoft.Agents.AI": "1.0.0-rc4",
-          "Microsoft.Agents.AI.Abstractions": "1.0.0-rc4",
-          "Microsoft.Agents.AI.Workflows": "1.0.0-rc4",
-          "Microsoft.Extensions.AI": "10.3.0",
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0",
-          "Microsoft.Extensions.VectorData.Abstractions": "9.7.0",
-          "Microsoft.ML.Tokenizers": "2.0.0",
-          "OpenTelemetry.Api": "1.13.1"
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.Agents.AI.Hosting.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
-      },
-      "Microsoft.Agents.AI.Hosting.A2A/1.0.0-preview.260311.1": {
-        "dependencies": {
-          "A2A": "0.3.3-preview",
-          "Microsoft.Agents.AI.Abstractions": "1.0.0-rc4",
-          "Microsoft.Agents.AI.Hosting": "1.0.0-preview.260311.1",
-          "Microsoft.Extensions.AI": "10.3.0",
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0",
-          "Microsoft.Extensions.VectorData.Abstractions": "9.7.0",
-          "Microsoft.ML.Tokenizers": "2.0.0",
-          "OpenTelemetry.Api": "1.13.1"
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.Agents.AI.Hosting.A2A.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
-      },
-      "Microsoft.Agents.AI.Hosting.A2A.AspNetCore/1.0.0-preview.260311.1": {
-        "dependencies": {
-          "A2A": "0.3.3-preview",
-          "A2A.AspNetCore": "0.3.3-preview",
-          "Microsoft.Agents.AI.Hosting.A2A": "1.0.0-preview.260311.1",
-          "Microsoft.Extensions.AI": "10.3.0",
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0",
-          "Microsoft.Extensions.VectorData.Abstractions": "9.7.0",
-          "Microsoft.ML.Tokenizers": "2.0.0",
-          "OpenTelemetry.Api": "1.13.1"
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.Agents.AI.Hosting.A2A.AspNetCore.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
-      },
-      "Microsoft.Agents.AI.OpenAI/1.0.0-rc4": {
-        "dependencies": {
-          "Microsoft.Agents.AI": "1.0.0-rc4",
-          "Microsoft.Extensions.AI": "10.3.0",
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0",
-          "Microsoft.Extensions.AI.OpenAI": "10.3.0",
-          "Microsoft.Extensions.VectorData.Abstractions": "9.7.0",
-          "Microsoft.ML.Tokenizers": "2.0.0",
-          "OpenAI": "2.8.0",
-          "System.ClientModel": "1.9.0"
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.Agents.AI.OpenAI.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
-      },
-      "Microsoft.Agents.AI.Workflows/1.0.0-rc4": {
-        "dependencies": {
-          "Microsoft.Agents.AI": "1.0.0-rc4",
-          "Microsoft.Agents.AI.Abstractions": "1.0.0-rc4",
-          "Microsoft.Extensions.AI": "10.3.0",
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0",
-          "Microsoft.Extensions.VectorData.Abstractions": "9.7.0",
-          "Microsoft.ML.Tokenizers": "2.0.0",
-          "OpenTelemetry.Api": "1.13.1"
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.Agents.AI.Workflows.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
-      },
-      "Microsoft.AspNetCore.OpenApi/10.0.2": {
-        "dependencies": {
-          "Microsoft.OpenApi": "2.0.0"
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.AspNetCore.OpenApi.dll": {
-            "assemblyVersion": "10.0.2.0",
-            "fileVersion": "10.0.225.61305"
-          }
-        }
-      },
-      "Microsoft.Extensions.AI/10.3.0": {
-        "dependencies": {
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0",
-          "System.Numerics.Tensors": "10.0.3"
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.Extensions.AI.dll": {
-            "assemblyVersion": "10.3.0.0",
-            "fileVersion": "10.300.26.10911"
-          }
-        }
-      },
-      "Microsoft.Extensions.AI.Abstractions/10.3.0": {
-        "runtime": {
-          "lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll": {
-            "assemblyVersion": "10.3.0.0",
-            "fileVersion": "10.300.26.10911"
-          }
-        }
-      },
-      "Microsoft.Extensions.AI.OpenAI/10.3.0": {
-        "dependencies": {
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0",
-          "OpenAI": "2.8.0"
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.Extensions.AI.OpenAI.dll": {
-            "assemblyVersion": "10.3.0.0",
-            "fileVersion": "10.300.26.10911"
+          "lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll": {
+            "assemblyVersion": "9.6.0.0",
+            "fileVersion": "9.600.25.31002"
           }
         }
       },
@@ -320,66 +149,11 @@
           }
         }
       },
-      "Microsoft.Extensions.VectorData.Abstractions/9.7.0": {
-        "dependencies": {
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0"
-        },
-        "runtime": {
-          "lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll": {
-            "assemblyVersion": "9.0.0.0",
-            "fileVersion": "9.0.0.0"
-          }
-        }
-      },
-      "Microsoft.ML.Tokenizers/2.0.0": {
-        "dependencies": {
-          "Google.Protobuf": "3.30.2"
-        },
-        "runtime": {
-          "lib/net8.0/Microsoft.ML.Tokenizers.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "2.0.25.55704"
-          }
-        }
-      },
-      "Microsoft.OpenApi/2.0.0": {
+      "Microsoft.OpenApi/2.4.1": {
         "runtime": {
           "lib/net8.0/Microsoft.OpenApi.dll": {
-            "assemblyVersion": "2.0.0.0",
-            "fileVersion": "2.0.0.0"
-          }
-        }
-      },
-      "ModelContextProtocol/1.1.0": {
-        "dependencies": {
-          "ModelContextProtocol.Core": "1.1.0"
-        },
-        "runtime": {
-          "lib/net10.0/ModelContextProtocol.dll": {
-            "assemblyVersion": "1.1.0.0",
-            "fileVersion": "1.1.0.0"
-          }
-        }
-      },
-      "ModelContextProtocol.Core/1.1.0": {
-        "dependencies": {
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0"
-        },
-        "runtime": {
-          "lib/net10.0/ModelContextProtocol.Core.dll": {
-            "assemblyVersion": "1.1.0.0",
-            "fileVersion": "1.1.0.0"
-          }
-        }
-      },
-      "OpenAI/2.8.0": {
-        "dependencies": {
-          "System.ClientModel": "1.9.0"
-        },
-        "runtime": {
-          "lib/net8.0/OpenAI.dll": {
-            "assemblyVersion": "2.8.0.0",
-            "fileVersion": "2.8.0.0"
+            "assemblyVersion": "2.4.1.0",
+            "fileVersion": "2.4.1.0"
           }
         }
       },
@@ -394,17 +168,17 @@
           }
         }
       },
-      "OpenTelemetry.Api/1.13.1": {
+      "OpenTelemetry.Api/1.12.0": {
         "runtime": {
           "lib/net9.0/OpenTelemetry.Api.dll": {
             "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.13.1.1811"
+            "fileVersion": "1.12.0.1644"
           }
         }
       },
       "OpenTelemetry.Api.ProviderBuilderExtensions/1.12.0": {
         "dependencies": {
-          "OpenTelemetry.Api": "1.13.1"
+          "OpenTelemetry.Api": "1.12.0"
         },
         "runtime": {
           "lib/net9.0/OpenTelemetry.Api.ProviderBuilderExtensions.dll": {
@@ -459,7 +233,7 @@
       },
       "OpenTelemetry.Instrumentation.Runtime/1.12.0": {
         "dependencies": {
-          "OpenTelemetry.Api": "1.13.1"
+          "OpenTelemetry.Api": "1.12.0"
         },
         "runtime": {
           "lib/net8.0/OpenTelemetry.Instrumentation.Runtime.dll": {
@@ -498,30 +272,40 @@
           }
         }
       },
-      "System.ClientModel/1.9.0": {
+      "Swashbuckle.AspNetCore/10.1.5": {
         "dependencies": {
-          "System.Memory.Data": "10.0.1"
+          "Swashbuckle.AspNetCore.Swagger": "10.1.5",
+          "Swashbuckle.AspNetCore.SwaggerGen": "10.1.5",
+          "Swashbuckle.AspNetCore.SwaggerUI": "10.1.5"
+        }
+      },
+      "Swashbuckle.AspNetCore.Swagger/10.1.5": {
+        "dependencies": {
+          "Microsoft.OpenApi": "2.4.1"
         },
         "runtime": {
-          "lib/net10.0/System.ClientModel.dll": {
-            "assemblyVersion": "1.9.0.0",
-            "fileVersion": "1.900.26.7706"
+          "lib/net10.0/Swashbuckle.AspNetCore.Swagger.dll": {
+            "assemblyVersion": "10.1.5.0",
+            "fileVersion": "10.1.5.2342"
           }
         }
       },
-      "System.Memory.Data/10.0.1": {
+      "Swashbuckle.AspNetCore.SwaggerGen/10.1.5": {
+        "dependencies": {
+          "Swashbuckle.AspNetCore.Swagger": "10.1.5"
+        },
         "runtime": {
-          "lib/net10.0/System.Memory.Data.dll": {
-            "assemblyVersion": "10.0.0.1",
-            "fileVersion": "10.0.125.57005"
+          "lib/net10.0/Swashbuckle.AspNetCore.SwaggerGen.dll": {
+            "assemblyVersion": "10.1.5.0",
+            "fileVersion": "10.1.5.2342"
           }
         }
       },
-      "System.Numerics.Tensors/10.0.3": {
+      "Swashbuckle.AspNetCore.SwaggerUI/10.1.5": {
         "runtime": {
-          "lib/net10.0/System.Numerics.Tensors.dll": {
-            "assemblyVersion": "10.0.0.3",
-            "fileVersion": "10.0.326.7603"
+          "lib/net10.0/Swashbuckle.AspNetCore.SwaggerUI.dll": {
+            "assemblyVersion": "10.1.5.0",
+            "fileVersion": "10.1.5.2342"
           }
         }
       },
@@ -550,103 +334,19 @@
       "serviceable": false,
       "sha512": ""
     },
-    "A2A/0.3.3-preview": {
+    "Microsoft.Extensions.AI/9.6.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-mZZirfa+W9UgjPIMlAtMan2qRh2mCEBRjOpD1siw0ykMXXjh8hg71RPZcYnmZyq0k+tQv9Ox1VaKn1YLbYK/NA==",
-      "path": "a2a/0.3.3-preview",
-      "hashPath": "a2a.0.3.3-preview.nupkg.sha512"
+      "sha512": "sha512-JrMdI7lKN23axyQpWLF2B1Pgzxo3+oO/1XNC90rlInlkdHnhOwqZ9vHlcZu5gZLtQPQLf6MbnWwgInm+GVuEpA==",
+      "path": "microsoft.extensions.ai/9.6.0",
+      "hashPath": "microsoft.extensions.ai.9.6.0.nupkg.sha512"
     },
-    "A2A.AspNetCore/0.3.3-preview": {
+    "Microsoft.Extensions.AI.Abstractions/9.6.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-hzkHxxkWjBFGXG394vN42U9AtCBIZoV+X+yctEM83oFn6r4pJxeczCYm15T6IL4L/9Wv8gDzwkQdxs81BEmZgg==",
-      "path": "a2a.aspnetcore/0.3.3-preview",
-      "hashPath": "a2a.aspnetcore.0.3.3-preview.nupkg.sha512"
-    },
-    "Google.Protobuf/3.30.2": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-Y2aOVLIt75yeeEWigg9V9YnjsEm53sADtLGq0gLhwaXpk3iu8tYSoauolyhenagA2sWno2TQ2WujI0HQd6s1Vw==",
-      "path": "google.protobuf/3.30.2",
-      "hashPath": "google.protobuf.3.30.2.nupkg.sha512"
-    },
-    "Microsoft.Agents.AI/1.0.0-rc4": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-fDsowhBBbWjJmm7kT0RJG4ED3I5X5xqsOg4R4gW2eR/ptzT2OLqsOJiO0rCPUrqWsPcpL0hbCD0heD4oMfirFQ==",
-      "path": "microsoft.agents.ai/1.0.0-rc4",
-      "hashPath": "microsoft.agents.ai.1.0.0-rc4.nupkg.sha512"
-    },
-    "Microsoft.Agents.AI.Abstractions/1.0.0-rc4": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-3/5gnZxpod0WUyeQtLmgXDoa7HFKLau4pp6+cHcd9A5wYuZmIXlIltonp9kw0akBbPF/0X6dYIFCq2r+yHduOw==",
-      "path": "microsoft.agents.ai.abstractions/1.0.0-rc4",
-      "hashPath": "microsoft.agents.ai.abstractions.1.0.0-rc4.nupkg.sha512"
-    },
-    "Microsoft.Agents.AI.Hosting/1.0.0-preview.260311.1": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-SEl5lW+gKoFIHF7o9UKwTGLwbCe97UJuKw9D+lyqlXhdY8lAsFgg3azM6fqCOmMABPKIkz7QHxm6l8b+DXJi0Q==",
-      "path": "microsoft.agents.ai.hosting/1.0.0-preview.260311.1",
-      "hashPath": "microsoft.agents.ai.hosting.1.0.0-preview.260311.1.nupkg.sha512"
-    },
-    "Microsoft.Agents.AI.Hosting.A2A/1.0.0-preview.260311.1": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-VOd8QljWWuomG3SG/eMQyNu/2EUnfehi18fwJLhC8wgqXKJgw9wPTklUK5EFnXy0a+M2xbQNfl9jjWgnnAG7uQ==",
-      "path": "microsoft.agents.ai.hosting.a2a/1.0.0-preview.260311.1",
-      "hashPath": "microsoft.agents.ai.hosting.a2a.1.0.0-preview.260311.1.nupkg.sha512"
-    },
-    "Microsoft.Agents.AI.Hosting.A2A.AspNetCore/1.0.0-preview.260311.1": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-zvbNGjJe/TP8jCq4/HwwfguL+awsT64uaAd3ZiRUNx5TJ7eyqj870pxJzAl/ZEOctmr7a18tGYpPTb61HnBzJg==",
-      "path": "microsoft.agents.ai.hosting.a2a.aspnetcore/1.0.0-preview.260311.1",
-      "hashPath": "microsoft.agents.ai.hosting.a2a.aspnetcore.1.0.0-preview.260311.1.nupkg.sha512"
-    },
-    "Microsoft.Agents.AI.OpenAI/1.0.0-rc4": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-tSie6i/Bo7KGPuTCAPz0sC1LX9OtRPp3ssRHBssBpd+e1noHLQULxfbMkT9x71tUgmgCOr25JaQ7My2egnseNQ==",
-      "path": "microsoft.agents.ai.openai/1.0.0-rc4",
-      "hashPath": "microsoft.agents.ai.openai.1.0.0-rc4.nupkg.sha512"
-    },
-    "Microsoft.Agents.AI.Workflows/1.0.0-rc4": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-Zv7ejlslPVA2pCUdA6cCpiBZH5/x2uiiXPcs/TGeD357hIc7seLdytjD3mplt0ZK54CtcdOUEKBk949vyMZDcA==",
-      "path": "microsoft.agents.ai.workflows/1.0.0-rc4",
-      "hashPath": "microsoft.agents.ai.workflows.1.0.0-rc4.nupkg.sha512"
-    },
-    "Microsoft.AspNetCore.OpenApi/10.0.2": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-YuEjUNpsoZLs0I5ONt013Z+Udsz3f9sPUh1Xm59LN7+/Z8oVG/swCUYLBbANtfreiunWnoT2uk+5kst4s2jr3Q==",
-      "path": "microsoft.aspnetcore.openapi/10.0.2",
-      "hashPath": "microsoft.aspnetcore.openapi.10.0.2.nupkg.sha512"
-    },
-    "Microsoft.Extensions.AI/10.3.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-zJYAHVM+zA74MNHifAyYE/jnfilI5WOnyQqnYobQZ5JW1VRSMGfQl/oqYdK3p2AdQOX8VcxSW6C+UsZYnpFB+A==",
-      "path": "microsoft.extensions.ai/10.3.0",
-      "hashPath": "microsoft.extensions.ai.10.3.0.nupkg.sha512"
-    },
-    "Microsoft.Extensions.AI.Abstractions/10.3.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-hDjDvUERvUH3HBMs2MDusOcGJBjAHOG5pJIU2x/HZEa4e1UthNKt89cwMi3B+ogJo6skki1XFjfgGN3ksnVqvQ==",
-      "path": "microsoft.extensions.ai.abstractions/10.3.0",
-      "hashPath": "microsoft.extensions.ai.abstractions.10.3.0.nupkg.sha512"
-    },
-    "Microsoft.Extensions.AI.OpenAI/10.3.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-+TAHAJy2+m5zazGLuwz6PbcMu6EmhxR+LmRhmz8+O3BBnfuGWVJOBGDeKAaSvIQDzKFYCLOrE4ZH0IbdLHVlKw==",
-      "path": "microsoft.extensions.ai.openai/10.3.0",
-      "hashPath": "microsoft.extensions.ai.openai.10.3.0.nupkg.sha512"
+      "sha512": "sha512-xGO7rHg3qK8jRdriAxIrsH4voNemCf8GVmgdcPXI5gpZ6lZWqOEM4ZO8yfYxUmg7+URw2AY1h7Uc/H17g7X1Kw==",
+      "path": "microsoft.extensions.ai.abstractions/9.6.0",
+      "hashPath": "microsoft.extensions.ai.abstractions.9.6.0.nupkg.sha512"
     },
     "Microsoft.Extensions.AmbientMetadata.Application/9.9.0": {
       "type": "package",
@@ -725,47 +425,12 @@
       "path": "microsoft.extensions.telemetry.abstractions/9.9.0",
       "hashPath": "microsoft.extensions.telemetry.abstractions.9.9.0.nupkg.sha512"
     },
-    "Microsoft.Extensions.VectorData.Abstractions/9.7.0": {
+    "Microsoft.OpenApi/2.4.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Vth/omSCX2vR0JabzSRU/hdPhr0CvUVZlaS2lJPWHrEwvak8ntrQLDtLMtMiWKSvviGBe/WmjUW8gA3qqn9tjw==",
-      "path": "microsoft.extensions.vectordata.abstractions/9.7.0",
-      "hashPath": "microsoft.extensions.vectordata.abstractions.9.7.0.nupkg.sha512"
-    },
-    "Microsoft.ML.Tokenizers/2.0.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-+b8lT4cLLO/sBR2hjvE/qG6qrZG15h7/PBvnIrzTh4xDaAxdHUY6449rC+1pHzQUsBiCHZVbj+VMn+xS0sL7TA==",
-      "path": "microsoft.ml.tokenizers/2.0.0",
-      "hashPath": "microsoft.ml.tokenizers.2.0.0.nupkg.sha512"
-    },
-    "Microsoft.OpenApi/2.0.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-GGYLfzV/G/ct80OZ45JxnWP7NvMX1BCugn/lX7TH5o0lcVaviavsLMTxmFV2AybXWjbi3h6FF1vgZiTK6PXndw==",
-      "path": "microsoft.openapi/2.0.0",
-      "hashPath": "microsoft.openapi.2.0.0.nupkg.sha512"
-    },
-    "ModelContextProtocol/1.1.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-dr7MeQocnOD9exXF2TIZc/80xp/wNVw3WpJZlz0X+ezMcOCXXkAwdMbpM5hohvnXw+KF29iaaYPJwUFbni+NCQ==",
-      "path": "modelcontextprotocol/1.1.0",
-      "hashPath": "modelcontextprotocol.1.1.0.nupkg.sha512"
-    },
-    "ModelContextProtocol.Core/1.1.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-3E/qGSPxAnuenD8uBT2NsHCP91ztn4WC9SfV7miKjpzDYQgVvGwbxnPhhZ8PAvltYWJ/P4wWbRmJ+2M5rZkrDQ==",
-      "path": "modelcontextprotocol.core/1.1.0",
-      "hashPath": "modelcontextprotocol.core.1.1.0.nupkg.sha512"
-    },
-    "OpenAI/2.8.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-KcYpZ9IhuxFD2hGAJlL5vABtkr00CjeJU0SY8CjZQyzvzkzLop8jhdX3iDvteVJg6e3y4TEiY+Kti4gDJAagnA==",
-      "path": "openai/2.8.0",
-      "hashPath": "openai.2.8.0.nupkg.sha512"
+      "sha512": "sha512-u7QhXCISMQuab3flasb1hoaiERmUqyWsW7tmQODyILoQ7mJV5IRGM+2KKZYo0QUfC13evEOcHAb6TPWgqEQtrw==",
+      "path": "microsoft.openapi/2.4.1",
+      "hashPath": "microsoft.openapi.2.4.1.nupkg.sha512"
     },
     "OpenTelemetry/1.12.0": {
       "type": "package",
@@ -774,12 +439,12 @@
       "path": "opentelemetry/1.12.0",
       "hashPath": "opentelemetry.1.12.0.nupkg.sha512"
     },
-    "OpenTelemetry.Api/1.13.1": {
+    "OpenTelemetry.Api/1.12.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-tieglRERo7Rgu8oE8aamnuXCMPEW5fXIqO5ngTMCNk9pOEXanc0SdQ86ZAD1goNiGcjWHn+P3WMZp0FZSJgCoQ==",
-      "path": "opentelemetry.api/1.13.1",
-      "hashPath": "opentelemetry.api.1.13.1.nupkg.sha512"
+      "sha512": "sha512-Xt0qldi+iE2szGrM3jAqzEMEJd48YBtqI6mge0+ArXTZg3aTpRmyhL6CKKl3bLioaFSSVbBpEbPin8u6Z46Yrw==",
+      "path": "opentelemetry.api/1.12.0",
+      "hashPath": "opentelemetry.api.1.12.0.nupkg.sha512"
     },
     "OpenTelemetry.Api.ProviderBuilderExtensions/1.12.0": {
       "type": "package",
@@ -844,26 +509,33 @@
       "path": "polly.ratelimiting/8.4.2",
       "hashPath": "polly.ratelimiting.8.4.2.nupkg.sha512"
     },
-    "System.ClientModel/1.9.0": {
+    "Swashbuckle.AspNetCore/10.1.5": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-1wdwKtMMMEFEYsxJmtrOd3G+7zVOVO3MlVZAsbKv9H0PnIx6J27fYAarMn0eQS0vKJPQL018DOb7YRK1O97p0A==",
-      "path": "system.clientmodel/1.9.0",
-      "hashPath": "system.clientmodel.1.9.0.nupkg.sha512"
+      "sha512": "sha512-/eNk9z/8quXhDX14o3XLbwAX/84uIWSbiUD7cI/UrQnoBMOiyAtzKxNEJUtf/TyxjFpcXxE9FAfLvtbNpxHBSg==",
+      "path": "swashbuckle.aspnetcore/10.1.5",
+      "hashPath": "swashbuckle.aspnetcore.10.1.5.nupkg.sha512"
     },
-    "System.Memory.Data/10.0.1": {
+    "Swashbuckle.AspNetCore.Swagger/10.1.5": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-BZC4mhdL569AXV56ep9YO6ShjhxFXGP7SwVX0Bc/e0dJPWnS6aBEXZJXqh64RVx8HquqWHkJUINBydLRQ1yq0g==",
-      "path": "system.memory.data/10.0.1",
-      "hashPath": "system.memory.data.10.0.1.nupkg.sha512"
+      "sha512": "sha512-s4Mct6+Ob0LK9vYVaZcYi/RFFCOEJNjf6nJ5ZPoxtpdFSlzR6i9AHI7Vl44obX8cynRxJW7prA1IUabkiXolFg==",
+      "path": "swashbuckle.aspnetcore.swagger/10.1.5",
+      "hashPath": "swashbuckle.aspnetcore.swagger.10.1.5.nupkg.sha512"
     },
-    "System.Numerics.Tensors/10.0.3": {
+    "Swashbuckle.AspNetCore.SwaggerGen/10.1.5": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-calKQ5nqV98lVRSCV7KFrlmw7nE7z6qIBWnMP+f7xAzY9H1cO15zJmkuZYM9RxYXDzQyI60/+dXd65UUY4HZFQ==",
-      "path": "system.numerics.tensors/10.0.3",
-      "hashPath": "system.numerics.tensors.10.0.3.nupkg.sha512"
+      "sha512": "sha512-ysQIRgqnx4Vb/9+r3xnEAiaxYmiBHO8jTg7ACaCh+R3Sn+ZKCWKD6nyu0ph3okP91wFSh/6LgccjeLUaQHV+ZA==",
+      "path": "swashbuckle.aspnetcore.swaggergen/10.1.5",
+      "hashPath": "swashbuckle.aspnetcore.swaggergen.10.1.5.nupkg.sha512"
+    },
+    "Swashbuckle.AspNetCore.SwaggerUI/10.1.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-tQWVKNJWW7lf6S0bv22+7yfxK5IKzvsMeueF4XHSziBfREhLKt42OKzi6/1nINmyGlM4hGbR8aSMg72dLLVBLw==",
+      "path": "swashbuckle.aspnetcore.swaggerui/10.1.5",
+      "hashPath": "swashbuckle.aspnetcore.swaggerui.10.1.5.nupkg.sha512"
     },
     "MultiAgent.ServiceDefaults/1.0.0": {
       "type": "project",

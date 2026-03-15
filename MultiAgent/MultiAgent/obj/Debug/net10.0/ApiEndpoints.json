@@ -1,16 +1,22 @@
 [
   {
-    "ContainingType": "DevPipeline.Controllers.PipelineController",
-    "Method": "Health",
-    "RelativePath": "api/Pipeline/health",
+    "ContainingType": "MultiAgent.Controllers.PipelineController",
+    "Method": "Get",
+    "RelativePath": "api/Pipeline/{id}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": []
   },
   {
-    "ContainingType": "DevPipeline.Controllers.PipelineController",
+    "ContainingType": "MultiAgent.Controllers.PipelineController",
     "Method": "History",
     "RelativePath": "api/Pipeline/history",
     "HttpMethod": "GET",
@@ -20,7 +26,7 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "DevPipeline.Controllers.PipelineController",
+    "ContainingType": "MultiAgent.Controllers.PipelineController",
     "Method": "Run",
     "RelativePath": "api/Pipeline/run",
     "HttpMethod": "POST",
@@ -29,30 +35,10 @@
     "Parameters": [
       {
         "Name": "request",
-        "Type": "DevPipeline.Models.PipelineRequest",
+        "Type": "MultiAgent.Models.PipelineRequest",
         "IsRequired": true
       }
     ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DevPipeline.Controllers.GitHubWebhookController",
-    "Method": "Handle",
-    "RelativePath": "api/webhook/github",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DevPipeline.Controllers.GitHubWebhookController",
-    "Method": "Ping",
-    "RelativePath": "api/webhook/ping",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
     "ReturnTypes": []
   },
   {

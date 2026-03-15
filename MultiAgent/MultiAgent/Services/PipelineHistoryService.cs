@@ -1,6 +1,6 @@
-﻿using DevPipeline.Models;
+﻿using MultiAgent.Models;
 
-namespace DevPipeline.Services;
+namespace MultiAgent.Services;
 
 /// <summary>
 /// In-memory store of all pipeline runs this session.

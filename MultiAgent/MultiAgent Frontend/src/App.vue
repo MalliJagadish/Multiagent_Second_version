@@ -4,7 +4,7 @@
     <!-- Header -->
     <header>
       <div class="logo">⚡ DevPipeline</div>
-      <div class="tagline">A2A Dev Pipeline · MAF rc4</div>
+      <div class="tagline">AI Dev Pipeline · In-Memory → GitHub</div>
       <div class="badges">
         <span class="badge" :class="connected ? 'live' : 'offline'">
           {{ connected ? '● Live' : '○ Offline' }}
@@ -29,17 +29,12 @@
             placeholder="e.g. Add JWT authentication to the login endpoint with refresh token support" />
         </div>
         <div class="row">
-          <div class="field flex1">
-            <label>Local Repo Path</label>
-            <input v-model="repoPath" :disabled="running"
-              placeholder="C:\\Jagadish Kumar\\ai-generated-code" />
-          </div>
           <div class="field" style="width:200px">
             <label>GitHub Issue # (optional)</label>
             <input v-model="issueNumber" :disabled="running" placeholder="e.g. 42" />
           </div>
           <button class="btn-primary" @click="runPipeline"
-            :disabled="running || !featureDescription || !repoPath">
+            :disabled="running || !featureDescription">
             <span v-if="!running">🚀 Run Pipeline</span>
             <span v-else class="pulse">⏳ Running...</span>
           </button>
@@ -146,9 +141,8 @@
           <div class="step-body">
             <strong>Get API Keys</strong>
             <ul>
-              <li>Gemini: <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a> → Get API Key → FREE, no card</li>
-              <li>Groq: <a href="https://console.groq.com" target="_blank">console.groq.com</a> → API Keys → FREE, no card</li>
-              <li>GitHub Models: <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a> → your existing PAT works!</li>
+              <li>Groq: <a href="https://console.groq.com" target="_blank">console.groq.com</a> → API Keys → FREE</li>
+              <li>Gemini: <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a> → Get API Key → FREE</li>
             </ul>
           </div>
         </div>
@@ -157,18 +151,18 @@
           <div class="step-num">2</div>
           <div class="step-body">
             <strong>Fill in appsettings.json</strong>
-            <pre>Gemini:ApiKey, Groq:ApiKey
-GitHub:Token (reused for Models too!), GitHub:RepoOwner
-GitHub:RepoName, GitHub:WebhookSecret, Pipeline:LocalRepoPath</pre>
+            <pre>Groq:ApiKey
+Gemini:ApiKey
+GitHub:Token, GitHub:RepoOwner, GitHub:RepoName</pre>
           </div>
         </div>
 
         <div class="step">
           <div class="step-num">3</div>
           <div class="step-body">
-            <strong>GitHub Personal Access Token</strong><br/>
+            <strong>GitHub Personal Access Token (Classic)</strong><br/>
             <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a>
-            → Generate new token (classic) → check <code>repo</code> scope → copy
+            → Tokens (classic) → Generate → check <code>repo</code> scope
           </div>
         </div>
 
@@ -176,7 +170,8 @@ GitHub:RepoName, GitHub:WebhookSecret, Pipeline:LocalRepoPath</pre>
           <div class="step-num">4</div>
           <div class="step-body">
             <strong>Create an empty GitHub repo</strong><br/>
-            This is where the pipeline commits the generated code and opens the Draft PR.
+            This is where the pipeline commits code and opens the Draft PR.
+            <br/><em>No local clone needed — everything happens in-memory!</em>
           </div>
         </div>
 
@@ -184,8 +179,7 @@ GitHub:RepoName, GitHub:WebhookSecret, Pipeline:LocalRepoPath</pre>
           <div class="step-num">5</div>
           <div class="step-body">
             <strong>Run the API</strong>
-            <pre>Set AppHost as startup project → F5
-Aspire Dashboard → http://localhost:18888</pre>
+            <pre>dotnet run   ← starts on https://localhost:7247</pre>
           </div>
         </div>
 
@@ -202,9 +196,8 @@ npm run dev   ← opens http://localhost:5173</pre>
         <div class="cost-box">
           <h4>Estimated cost per full pipeline run</h4>
           <table class="cost-table">
-            <tr><td>✨ Gemini 2.0 Flash (Coder, Playwright, Security)</td><td>$0.00 FREE</td></tr>
-            <tr><td>⚡ Groq Llama 3.3 70B (UnitTest)</td><td>$0.00 FREE</td></tr>
-            <tr><td>🐙 GitHub Models GPT-4o Mini (Review)</td><td>$0.00 FREE</td></tr>
+            <tr><td>⚡ Groq Llama 3.3 (Coder, UnitTest)</td><td>$0.00 FREE</td></tr>
+            <tr><td>✨ Gemini 2.0 Flash (Playwright, Review, Security)</td><td>$0.00 FREE</td></tr>
             <tr class="total"><td><strong>Total per pipeline run</strong></td><td><strong>$0.00 FREE</strong></td></tr>
           </table>
         </div>
@@ -218,7 +211,6 @@ npm run dev   ← opens http://localhost:5173</pre>
 import { ref, nextTick, onMounted, onUnmounted } from 'vue'
 import * as signalR from '@microsoft/signalr'
 
-// ── Types ─────────────────────────────────────────────────────
 interface AgentState {
   name:   string
   label:  string
@@ -250,13 +242,11 @@ interface FinalReport {
   summary:   string
 }
 
-// ── State ─────────────────────────────────────────────────────
 const tab                = ref<'run' | 'history' | 'setup'>('run')
 const connected          = ref(false)
 const running            = ref(false)
 const hasStarted         = ref(false)
 const featureDescription = ref('')
-const repoPath           = ref('')
 const issueNumber        = ref('')
 const logs               = ref<LogEntry[]>([])
 const history            = ref<PipelineRun[]>([])
@@ -264,29 +254,22 @@ const finalReport        = ref<FinalReport | null>(null)
 const logsEl             = ref<HTMLElement | null>(null)
 
 const agents = ref<AgentState[]>([
-  { name: 'CoderAgent',      label: 'Coder',      icon: '🧑‍💻', model: 'Gemini 2.0 Flash',  status: 'waiting' },
-  { name: 'UnitTestAgent',   label: 'Unit Tests', icon: '🧪', model: 'Groq Llama 3.3',    status: 'waiting' },
-  { name: 'PlaywrightAgent', label: 'Playwright', icon: '🎭', model: 'Gemini 2.0 Flash',  status: 'waiting' },
-  { name: 'ReviewAgent',     label: 'Review',     icon: '👁️', model: 'GitHub GPT-4o Mini', status: 'waiting' },
-  { name: 'SecurityAgent',   label: 'Security',   icon: '🔒', model: 'Gemini 2.0 Flash',  status: 'waiting' },
+  { name: 'CoderAgent',      label: 'Coder',      icon: '🧑‍💻', model: 'Groq Llama 3.3',   status: 'waiting' },
+  { name: 'UnitTestAgent',   label: 'Unit Tests', icon: '🧪', model: 'Groq Llama 3.3',   status: 'waiting' },
+  { name: 'PlaywrightAgent', label: 'Playwright', icon: '🎭', model: 'Gemini 2.0 Flash', status: 'waiting' },
+  { name: 'ReviewAgent', label: 'Review', icon: '👁️', model: 'GitHub GPT-4.1', status: 'waiting' },
+  { name: 'SecurityAgent',   label: 'Security',   icon: '🔒', model: 'Gemini 2.0 Flash', status: 'waiting' },
 ])
 
-// ── SignalR connection ─────────────────────────────────────────
-// Connects to the .NET Hub at /pipelinehub
-// Vite proxies /api → https://localhost:5000
-// For SignalR we connect directly since proxy doesn't handle WS by default
-const API_BASE = 'https://localhost:5000'
+// ── SignalR ───────────────────────────────────────────────────
+// IMPORTANT: Use HTTP (not HTTPS) to avoid self-signed cert issues
+const API_BASE = 'https://localhost:7247'
 
 let hubConnection: signalR.HubConnection | null = null
 
 function buildConnection(): signalR.HubConnection {
   return new signalR.HubConnectionBuilder()
-    .withUrl(`${API_BASE}/pipelinehub`, {
-      skipNegotiation: false,
-      transport: signalR.HttpTransportType.WebSockets
-        | signalR.HttpTransportType.ServerSentEvents
-        | signalR.HttpTransportType.LongPolling
-    })
+    .withUrl(`${API_BASE}/pipelinehub`)
     .withAutomaticReconnect()
     .configureLogging(signalR.LogLevel.Warning)
     .build()
@@ -295,66 +278,45 @@ function buildConnection(): signalR.HubConnection {
 async function startConnection(): Promise<void> {
   hubConnection = buildConnection()
 
-  // ── Incoming SignalR events from .NET backend ──────────────
-
-  // Log line: { pipelineId, agent, message, level, timestamp }
   hubConnection.on('PipelineLog', (data: {
-    pipelineId: string
-    agent:      string
-    message:    string
-    level:      string
+    pipelineId: string; agent: string; message: string; level: string
   }) => {
     addLog(data.agent, data.message, data.level)
   })
 
-  // Token-by-token LLM output: { pipelineId, agent, token }
   hubConnection.on('AgentToken', (data: {
-    pipelineId: string
-    agent:      string
-    token:      string
+    pipelineId: string; agent: string; token: string
   }) => {
-    // Append token to last log line if same agent, else new line
     const last = logs.value[logs.value.length - 1]
     if (last && last.agent === data.agent && last.level === 'token') {
       last.message += data.token
     } else {
       logs.value.push({
-        agent:   data.agent,
-        message: data.token,
-        level:   'token',
-        time:    new Date().toTimeString().slice(0, 8)
+        agent: data.agent, message: data.token, level: 'token',
+        time: new Date().toTimeString().slice(0, 8)
       })
     }
     scrollLogs()
   })
 
-  // Agent status change: { pipelineId, agentName, status }
   hubConnection.on('AgentStatus', (data: {
-    pipelineId: string
-    agentName:  string
-    status:     'waiting' | 'running' | 'done' | 'failed'
+    pipelineId: string; agentName: string;
+    status: 'waiting' | 'running' | 'done' | 'failed'
   }) => {
     const agent = agents.value.find(a => a.name === data.agentName)
     if (agent) agent.status = data.status
   })
 
-  // Pipeline finished: { pipelineId, hasErrors, prUrl, summary }
   hubConnection.on('PipelineComplete', (data: {
-    pipelineId: string
-    hasErrors:  boolean
-    prUrl?:     string
-    summary:    string
+    pipelineId: string; hasErrors: boolean; prUrl?: string; summary: string
   }) => {
     running.value = false
     finalReport.value = {
-      hasErrors: data.hasErrors,
-      prUrl:     data.prUrl,
-      summary:   data.summary
+      hasErrors: data.hasErrors, prUrl: data.prUrl, summary: data.summary
     }
     addLog('Orchestrator', data.summary, data.hasErrors ? 'warning' : 'success')
   })
 
-  // Connection events
   hubConnection.onreconnecting(() => { connected.value = false })
   hubConnection.onreconnected(()  => { connected.value = true  })
   hubConnection.onclose(()        => { connected.value = false })
@@ -368,16 +330,10 @@ async function startConnection(): Promise<void> {
   }
 }
 
-// ── Lifecycle ─────────────────────────────────────────────────
-onMounted(async () => {
-  await startConnection()
-})
+onMounted(async () => { await startConnection() })
+onUnmounted(async () => { if (hubConnection) await hubConnection.stop() })
 
-onUnmounted(async () => {
-  if (hubConnection) await hubConnection.stop()
-})
-
-// ── Run pipeline ───────────────────────────────────────────────
+// ── Run pipeline (no local path needed) ───────────────────────
 async function runPipeline(): Promise<void> {
   running.value      = true
   hasStarted.value   = true
@@ -391,7 +347,6 @@ async function runPipeline(): Promise<void> {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         featureDescription: featureDescription.value,
-        repoPath:           repoPath.value,
         gitHubIssueNumber:  issueNumber.value || null
       })
     })
@@ -401,14 +356,12 @@ async function runPipeline(): Promise<void> {
       addLog('System', `❌ API error: ${err}`, 'error')
       running.value = false
     }
-    // Success: pipeline started in background, logs come via SignalR
   } catch {
-    addLog('System', '❌ Cannot reach API on port 5000 — is dotnet running?', 'error')
+    addLog('System', '❌ Cannot reach API — is dotnet running on port 5000?', 'error')
     running.value = false
   }
 }
 
-// ── History ────────────────────────────────────────────────────
 async function loadHistory(): Promise<void> {
   try {
     const res = await fetch(`${API_BASE}/api/pipeline/history`)
@@ -418,12 +371,9 @@ async function loadHistory(): Promise<void> {
   }
 }
 
-// ── Helpers ────────────────────────────────────────────────────
 function addLog(agent: string, message: string, level = 'info'): void {
   logs.value.push({
-    agent,
-    message,
-    level,
+    agent, message, level,
     time: new Date().toTimeString().slice(0, 8)
   })
   scrollLogs()
@@ -460,7 +410,6 @@ function duration(start?: string, end?: string): string {
   margin: 0 auto;
 }
 
-/* Header */
 header { display:flex; align-items:center; gap:12px; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #1e2535; }
 .logo    { font-size:20px; font-weight:700; color:#60a5fa; }
 .tagline { color:#475569; font-size:13px; flex:1; }
@@ -469,16 +418,13 @@ header { display:flex; align-items:center; gap:12px; margin-bottom:20px; padding
 .live    { color:#4ade80; background:#052e16; }
 .offline { color:#94a3b8; background:#1e2535; }
 
-/* Tabs */
 .tabs { display:flex; gap:4px; margin-bottom:16px; }
 .tabs button { background:#131720; border:1px solid #1e2535; color:#64748b; padding:8px 18px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:500; transition:all .2s; }
 .tabs button.active { background:#1e3a5f; border-color:#3b82f6; color:#93c5fd; }
 .tabs button:hover:not(.active) { border-color:#334155; color:#94a3b8; }
 
-/* Card */
 .card { background:#131720; border:1px solid #1e2535; border-radius:12px; padding:20px; margin-bottom:16px; }
 
-/* Form */
 .field { display:flex; flex-direction:column; gap:6px; }
 .field label { font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.8px; }
 textarea, input { background:#0d0f14; border:1px solid #1e2535; border-radius:8px; color:#e2e8f0; font-family:'JetBrains Mono',monospace; font-size:13px; padding:10px 12px; width:100%; transition:border-color .2s; }
@@ -487,18 +433,17 @@ textarea:focus, input:focus { outline:none; border-color:#3b82f6; }
 .row   { display:flex; gap:12px; align-items:flex-end; margin-top:14px; flex-wrap:wrap; }
 .flex1 { flex:1; min-width:200px; }
 
-/* Buttons */
+.mode-badge { margin-top:12px; font-size:12px; color:#4ade80; background:#052e16; border:1px solid #166534; border-radius:6px; padding:8px 12px; }
+
 .btn-primary { background:#2563eb; color:#fff; border:none; border-radius:8px; padding:10px 24px; font-size:14px; font-weight:600; cursor:pointer; white-space:nowrap; transition:background .2s; }
 .btn-primary:hover:not(:disabled) { background:#1d4ed8; }
 .btn-primary:disabled { background:#1e2535; color:#475569; cursor:not-allowed; }
 .btn-ghost { background:none; border:1px solid #1e2535; color:#64748b; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:12px; }
 .btn-ghost:hover { border-color:#334155; color:#94a3b8; }
 
-/* Info banner */
 .info-banner { background:#0f1e35; border:1px solid #1e3a5f; border-radius:8px; padding:12px 16px; font-size:13px; color:#93c5fd; margin-bottom:16px; }
 .info-banner code { background:#1e3a5f; padding:1px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:12px; }
 
-/* Agents */
 .agents { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
 .agent  { flex:1; min-width:130px; background:#131720; border:1px solid #1e2535; border-radius:10px; padding:14px 12px; text-align:center; transition:all .3s; }
 .agent.running { border-color:#3b82f6; background:#0f172a; box-shadow:0 0 12px #1e3a5f; }
@@ -509,7 +454,6 @@ textarea:focus, input:focus { outline:none; border-color:#3b82f6; }
 .agent-model       { font-size:10px; color:#475569; font-family:'JetBrains Mono',monospace; margin-bottom:4px; }
 .agent-status-text { font-size:11px; }
 
-/* Logs */
 .log-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:13px; font-weight:600; color:#64748b; }
 .logs { background:#0a0c10; border:1px solid #1e2535; border-radius:8px; padding:12px; height:300px; overflow-y:auto; font-family:'JetBrains Mono',monospace; font-size:12px; }
 .log { display:flex; gap:10px; padding:3px 0; border-bottom:1px solid #0a0d14; }
@@ -521,14 +465,12 @@ textarea:focus, input:focus { outline:none; border-color:#3b82f6; }
 .log.warning .m { color:#fbbf24; }
 .log.token   .m { color:#c4b5fd; }
 
-/* Report */
 .report      { border-radius:12px; padding:20px; margin-bottom:16px; }
 .report-ok   { background:#052e16; border:1px solid #166534; }
 .report-warn { background:#1c1008; border:1px solid #92400e; }
 .report h3   { font-size:16px; font-weight:700; }
 .pr-link { display:inline-block; margin-top:14px; background:#1d4ed8; color:#fff; padding:8px 18px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; }
 
-/* History table */
 .history-table { width:100%; border-collapse:collapse; font-size:13px; }
 .history-table th { text-align:left; padding:8px 12px; color:#64748b; font-size:11px; text-transform:uppercase; letter-spacing:.6px; border-bottom:1px solid #1e2535; }
 .history-table td { padding:10px 12px; border-bottom:1px solid #0f1520; }
@@ -537,7 +479,6 @@ textarea:focus, input:focus { outline:none; border-color:#3b82f6; }
 .badge-running  { color:#60a5fa; }
 .badge-failed   { color:#f87171; }
 
-/* Setup */
 .setup h3 { font-size:16px; font-weight:700; margin-bottom:18px; }
 .step { display:flex; gap:14px; margin-bottom:18px; padding-bottom:18px; border-bottom:1px solid #1e2535; }
 .step-num { width:28px; height:28px; min-width:28px; background:#1e3a5f; color:#60a5fa; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; }
@@ -553,7 +494,6 @@ textarea:focus, input:focus { outline:none; border-color:#3b82f6; }
 .cost-table td:last-child { text-align:right; color:#e2e8f0; }
 .cost-table tr.total td { color:#4ade80; border-top:1px solid #1e2535; padding-top:10px; font-weight:600; }
 
-/* Utilities */
 .dim   { color:#334155; }
 .green { color:#4ade80; }
 .red   { color:#f87171; }

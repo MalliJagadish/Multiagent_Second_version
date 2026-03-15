@@ -1,22 +1,67 @@
 {
-  "openapi": "3.1.1",
+  "openapi": "3.0.4",
   "info": {
-    "title": "MultiAgent | v1",
-    "version": "1.0.0"
+    "title": "MultiAgent",
+    "version": "1.0"
   },
-  "servers": [
-    {
-      "url": "http://localhost:53453/"
-    },
-    {
-      "url": "https://localhost:44372/"
-    }
-  ],
   "paths": {
-    "/": {
+    "/api/Pipeline/run": {
+      "post": {
+        "tags": [
+          "Pipeline"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PipelineRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PipelineRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PipelineRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Pipeline/history": {
       "get": {
         "tags": [
-          "MultiAgent"
+          "Pipeline"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Pipeline/{id}": {
+      "get": {
+        "tags": [
+          "Pipeline"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -67,6 +112,24 @@
   },
   "components": {
     "schemas": {
+      "PipelineRequest": {
+        "type": "object",
+        "properties": {
+          "featureDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "gitHubIssueNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "gitHubRepoFullName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "WeatherForecast": {
         "type": "object",
         "properties": {
@@ -75,34 +138,26 @@
             "format": "date"
           },
           "temperatureC": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "temperatureF": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
           },
           "summary": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           }
-        }
+        },
+        "additionalProperties": false
       }
     }
   },
   "tags": [
     {
-      "name": "MultiAgent"
+      "name": "Pipeline"
     },
     {
       "name": "WeatherForecast"

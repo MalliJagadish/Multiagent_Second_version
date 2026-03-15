@@ -1,94 +1,87 @@
-﻿//var builder = WebApplication.CreateBuilder(args);
+﻿//using MultiAgent.Hubs;
+//using MultiAgent.Services;
+//using MultiAgent.Workflows;
 
-//builder.AddServiceDefaults();
+//var builder = WebApplication.CreateBuilder(args);
 
-//// Add services to the container.
-
+//// ── Services ──────────────────────────────────────────────
 //builder.Services.AddControllers();
-//// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-//builder.Services.AddOpenApi();
+//builder.Services.AddSignalR();
+//builder.Services.AddEndpointsApiExplorer();
+//builder.Services.AddSwaggerGen();
+
+//// Register pipeline services
+//builder.Services.AddSingleton<PipelineHistoryService>();
+//builder.Services.AddSingleton<GitHubService>();
+//builder.Services.AddTransient<MultiAgentWorkflow>();
+
+//// CORS — allow Vue dashboard to connect
+//builder.Services.AddCors(options =>
+//{
+//    options.AddDefaultPolicy(policy =>
+//        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+
+//    options.AddPolicy("SignalR", policy =>
+//        policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
+//              .AllowAnyMethod().AllowAnyHeader().AllowCredentials());
+//});
 
 //var app = builder.Build();
 
-//app.MapDefaultEndpoints();
-
-//// map root to swagger so visiting "/" won't return 404
-//app.MapGet("/", () => Results.Redirect("/swagger"));
-
-//// Configure the HTTP request pipeline.
+//// ── Middleware ─────────────────────────────────────────────
 //if (app.Environment.IsDevelopment())
 //{
-//    app.MapOpenApi();
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
 //}
 
-//app.UseHttpsRedirection();
-
-//app.UseAuthorization();
-
+//app.UseCors();
 //app.MapControllers();
+//app.MapHub<PipelineHub>("/pipelinehub");
 
 //app.Run();
 
 
-using DevPipeline.Hubs;
-using DevPipeline.Services;
-using DevPipeline.Workflows;
+using MultiAgent.Hubs;
+using MultiAgent.Services;
+using MultiAgent.Workflows;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── Aspire — handles OpenTelemetry, health checks, logging ───────
-// This one line replaces all manual OpenTelemetry setup.
-// Aspire Dashboard shows every agent call, LLM request, tool invocation.
-builder.AddServiceDefaults();
-
-// ── CORS — allow Vue dashboard ────────────────────────────────────
-builder.Services.AddCors(o => o.AddDefaultPolicy(p => p
-    .WithOrigins("https://localhost:5173", "http://localhost:5173")
-    .AllowAnyHeader()
-    .AllowAnyMethod()
-    .AllowCredentials()));
-
-// ── Controllers + SignalR ─────────────────────────────────────────
-// SignalR is built into .NET 10 — no extra NuGet package needed
+// ── Services ──────────────────────────────────────────────
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-// ── Services ──────────────────────────────────────────────────────
-builder.Services.AddSingleton<GitHubService>();
+// Register pipeline services
 builder.Services.AddSingleton<PipelineHistoryService>();
+builder.Services.AddSingleton<GitHubService>();
+builder.Services.AddTransient<MultiAgentWorkflow>();
 
-// DevPipelineWorkflow is Scoped — each pipeline run gets a fresh instance
-// Prevents state bleeding between concurrent runs
-builder.Services.AddScoped<DevPipelineWorkflow>();
+// CORS — SignalR requires credentials mode, which forbids wildcard origin.
+// Use explicit origins + AllowCredentials for everything.
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+        policy.WithOrigins("http://localhost:5173", "http://localhost:3000", "https://localhost:5173")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials());
+});
 
-// ─────────────────────────────────────────────────────────────────
 var app = builder.Build();
+app.UseHttpsRedirection();
+
+// ── Middleware ─────────────────────────────────────────────
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseCors();
-app.UseHttpsRedirection();
 app.MapControllers();
-app.MapHub<PipelineHub>("/pipelinehub");
-
-// Aspire health endpoints: /health and /alive
-app.MapDefaultEndpoints();
-
-Console.WriteLine("""
-
-  ╔══════════════════════════════════════════════════════════╗
-  ║    DevPipeline V4 — Microsoft Agent Framework rc4 🚀     ║
-  ╠══════════════════════════════════════════════════════════╣
-  ║  Aspire Dashboard → http://localhost:18888               ║
-  ║  API              → https://localhost:5000               ║
-  ║  SignalR Hub      → https://localhost:5000/pipelinehub   ║
-  ║  Webhook          → https://localhost:5000/api/webhook/github ║
-  ║  Health           → https://localhost:5000/api/pipeline/health ║
-  ╠══════════════════════════════════════════════════════════╣
-  ║  A2A Pipeline:                                           ║
-  ║  Coder (Claude) → UnitTest (GPT-4o) →                   ║
-  ║  Playwright (Gemini) → Review (GPT-4o) →                ║
-  ║  Security (Gemini)                                       ║
-  ╚══════════════════════════════════════════════════════════╝
-
-""");
+app.MapHub<PipelineHub>("/pipelinehub").RequireCors();
 
 app.Run();

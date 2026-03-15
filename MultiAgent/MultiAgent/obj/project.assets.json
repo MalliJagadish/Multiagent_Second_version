@@ -2,269 +2,31 @@
   "version": 3,
   "targets": {
     "net10.0": {
-      "A2A/0.3.3-preview": {
+      "Microsoft.Extensions.AI/9.6.0": {
         "type": "package",
         "dependencies": {
-          "Microsoft.Extensions.AI.Abstractions": "9.10.0"
+          "Microsoft.Extensions.AI.Abstractions": "9.6.0"
         },
         "compile": {
-          "lib/net9.0/A2A.dll": {
+          "lib/net9.0/Microsoft.Extensions.AI.dll": {
             "related": ".xml"
           }
         },
         "runtime": {
-          "lib/net9.0/A2A.dll": {
+          "lib/net9.0/Microsoft.Extensions.AI.dll": {
             "related": ".xml"
           }
         }
       },
-      "A2A.AspNetCore/0.3.3-preview": {
+      "Microsoft.Extensions.AI.Abstractions/9.6.0": {
         "type": "package",
-        "dependencies": {
-          "A2A": "0.3.3-preview"
-        },
         "compile": {
-          "lib/net9.0/A2A.AspNetCore.dll": {
+          "lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll": {
             "related": ".xml"
           }
         },
         "runtime": {
-          "lib/net9.0/A2A.AspNetCore.dll": {
-            "related": ".xml"
-          }
-        },
-        "frameworkReferences": [
-          "Microsoft.AspNetCore.App"
-        ]
-      },
-      "Google.Protobuf/3.30.2": {
-        "type": "package",
-        "compile": {
-          "lib/net5.0/Google.Protobuf.dll": {
-            "related": ".pdb;.xml"
-          }
-        },
-        "runtime": {
-          "lib/net5.0/Google.Protobuf.dll": {
-            "related": ".pdb;.xml"
-          }
-        }
-      },
-      "Microsoft.Agents.AI/1.0.0-rc4": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Agents.AI.Abstractions": "1.0.0-rc4",
-          "Microsoft.Extensions.AI": "10.3.0",
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0",
-          "Microsoft.Extensions.VectorData.Abstractions": "9.7.0",
-          "Microsoft.ML.Tokenizers": "2.0.0"
-        },
-        "compile": {
-          "lib/net10.0/Microsoft.Agents.AI.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.Agents.AI.dll": {
-            "related": ".xml"
-          }
-        }
-      },
-      "Microsoft.Agents.AI.Abstractions/1.0.0-rc4": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0"
-        },
-        "compile": {
-          "lib/net10.0/Microsoft.Agents.AI.Abstractions.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.Agents.AI.Abstractions.dll": {
-            "related": ".xml"
-          }
-        }
-      },
-      "Microsoft.Agents.AI.Hosting/1.0.0-preview.260311.1": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Agents.AI": "1.0.0-rc4",
-          "Microsoft.Agents.AI.Abstractions": "1.0.0-rc4",
-          "Microsoft.Agents.AI.Workflows": "1.0.0-rc4",
-          "Microsoft.Extensions.AI": "10.3.0",
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0",
-          "Microsoft.Extensions.VectorData.Abstractions": "9.7.0",
-          "Microsoft.ML.Tokenizers": "2.0.0",
-          "OpenTelemetry.Api": "1.13.1"
-        },
-        "compile": {
-          "lib/net10.0/Microsoft.Agents.AI.Hosting.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.Agents.AI.Hosting.dll": {
-            "related": ".xml"
-          }
-        }
-      },
-      "Microsoft.Agents.AI.Hosting.A2A/1.0.0-preview.260311.1": {
-        "type": "package",
-        "dependencies": {
-          "A2A": "0.3.3-preview",
-          "Microsoft.Agents.AI.Abstractions": "1.0.0-rc4",
-          "Microsoft.Agents.AI.Hosting": "1.0.0-preview.260311.1",
-          "Microsoft.Extensions.AI": "10.3.0",
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0",
-          "Microsoft.Extensions.VectorData.Abstractions": "9.7.0",
-          "Microsoft.ML.Tokenizers": "2.0.0",
-          "OpenTelemetry.Api": "1.13.1"
-        },
-        "compile": {
-          "lib/net10.0/Microsoft.Agents.AI.Hosting.A2A.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.Agents.AI.Hosting.A2A.dll": {
-            "related": ".xml"
-          }
-        }
-      },
-      "Microsoft.Agents.AI.Hosting.A2A.AspNetCore/1.0.0-preview.260311.1": {
-        "type": "package",
-        "dependencies": {
-          "A2A": "0.3.3-preview",
-          "A2A.AspNetCore": "0.3.3-preview",
-          "Microsoft.Agents.AI.Hosting.A2A": "1.0.0-preview.260311.1",
-          "Microsoft.Extensions.AI": "10.3.0",
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0",
-          "Microsoft.Extensions.VectorData.Abstractions": "9.7.0",
-          "Microsoft.ML.Tokenizers": "2.0.0",
-          "OpenTelemetry.Api": "1.13.1"
-        },
-        "compile": {
-          "lib/net10.0/Microsoft.Agents.AI.Hosting.A2A.AspNetCore.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.Agents.AI.Hosting.A2A.AspNetCore.dll": {
-            "related": ".xml"
-          }
-        }
-      },
-      "Microsoft.Agents.AI.OpenAI/1.0.0-rc4": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Agents.AI": "1.0.0-rc4",
-          "Microsoft.Extensions.AI": "10.3.0",
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0",
-          "Microsoft.Extensions.AI.OpenAI": "10.3.0",
-          "Microsoft.Extensions.VectorData.Abstractions": "9.7.0",
-          "Microsoft.ML.Tokenizers": "2.0.0",
-          "OpenAI": "2.8.0",
-          "System.ClientModel": "1.9.0"
-        },
-        "compile": {
-          "lib/net10.0/Microsoft.Agents.AI.OpenAI.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.Agents.AI.OpenAI.dll": {
-            "related": ".xml"
-          }
-        }
-      },
-      "Microsoft.Agents.AI.Workflows/1.0.0-rc4": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Agents.AI": "1.0.0-rc4",
-          "Microsoft.Agents.AI.Abstractions": "1.0.0-rc4",
-          "Microsoft.Extensions.AI": "10.3.0",
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0",
-          "Microsoft.Extensions.VectorData.Abstractions": "9.7.0",
-          "Microsoft.ML.Tokenizers": "2.0.0",
-          "OpenTelemetry.Api": "1.13.1"
-        },
-        "compile": {
-          "lib/net10.0/Microsoft.Agents.AI.Workflows.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.Agents.AI.Workflows.dll": {
-            "related": ".xml"
-          }
-        }
-      },
-      "Microsoft.AspNetCore.OpenApi/10.0.2": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.OpenApi": "2.0.0"
-        },
-        "compile": {
-          "lib/net10.0/Microsoft.AspNetCore.OpenApi.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.AspNetCore.OpenApi.dll": {
-            "related": ".xml"
-          }
-        },
-        "frameworkReferences": [
-          "Microsoft.AspNetCore.App"
-        ],
-        "build": {
-          "build/Microsoft.AspNetCore.OpenApi.targets": {}
-        }
-      },
-      "Microsoft.Extensions.AI/10.3.0": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0",
-          "System.Numerics.Tensors": "10.0.3"
-        },
-        "compile": {
-          "lib/net10.0/Microsoft.Extensions.AI.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.Extensions.AI.dll": {
-            "related": ".xml"
-          }
-        }
-      },
-      "Microsoft.Extensions.AI.Abstractions/10.3.0": {
-        "type": "package",
-        "compile": {
-          "lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll": {
-            "related": ".xml"
-          }
-        }
-      },
-      "Microsoft.Extensions.AI.OpenAI/10.3.0": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0",
-          "OpenAI": "2.8.0"
-        },
-        "compile": {
-          "lib/net10.0/Microsoft.Extensions.AI.OpenAI.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.Extensions.AI.OpenAI.dll": {
+          "lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll": {
             "related": ".xml"
           }
         }
@@ -283,6 +45,17 @@
         },
         "build": {
           "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Extensions.ApiDescription.Server/10.0.0": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.Extensions.ApiDescription.Server.props": {},
+          "build/Microsoft.Extensions.ApiDescription.Server.targets": {}
+        },
+        "buildMultiTargeting": {
+          "buildMultiTargeting/Microsoft.Extensions.ApiDescription.Server.props": {},
+          "buildMultiTargeting/Microsoft.Extensions.ApiDescription.Server.targets": {}
         }
       },
       "Microsoft.Extensions.Compliance.Abstractions/9.9.0": {
@@ -461,39 +234,7 @@
           "buildTransitive/net8.0/Microsoft.Extensions.Telemetry.Abstractions.targets": {}
         }
       },
-      "Microsoft.Extensions.VectorData.Abstractions/9.7.0": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Extensions.AI.Abstractions": "9.5.0"
-        },
-        "compile": {
-          "lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll": {
-            "related": ".xml"
-          }
-        }
-      },
-      "Microsoft.ML.Tokenizers/2.0.0": {
-        "type": "package",
-        "dependencies": {
-          "Google.Protobuf": "3.30.2"
-        },
-        "compile": {
-          "lib/net8.0/Microsoft.ML.Tokenizers.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net8.0/Microsoft.ML.Tokenizers.dll": {
-            "related": ".xml"
-          }
-        }
-      },
-      "Microsoft.OpenApi/2.0.0": {
+      "Microsoft.OpenApi/2.4.1": {
         "type": "package",
         "compile": {
           "lib/net8.0/Microsoft.OpenApi.dll": {
@@ -503,54 +244,6 @@
         "runtime": {
           "lib/net8.0/Microsoft.OpenApi.dll": {
             "related": ".pdb;.xml"
-          }
-        }
-      },
-      "ModelContextProtocol/1.1.0": {
-        "type": "package",
-        "dependencies": {
-          "ModelContextProtocol.Core": "1.1.0"
-        },
-        "compile": {
-          "lib/net10.0/ModelContextProtocol.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net10.0/ModelContextProtocol.dll": {
-            "related": ".xml"
-          }
-        }
-      },
-      "ModelContextProtocol.Core/1.1.0": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Extensions.AI.Abstractions": "10.3.0"
-        },
-        "compile": {
-          "lib/net10.0/ModelContextProtocol.Core.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net10.0/ModelContextProtocol.Core.dll": {
-            "related": ".xml"
-          }
-        }
-      },
-      "OpenAI/2.8.0": {
-        "type": "package",
-        "dependencies": {
-          "System.ClientModel": "1.8.1"
-        },
-        "compile": {
-          "lib/net8.0/OpenAI.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net8.0/OpenAI.dll": {
-            "related": ".xml"
           }
         }
       },
@@ -570,7 +263,7 @@
           }
         }
       },
-      "OpenTelemetry.Api/1.13.1": {
+      "OpenTelemetry.Api/1.12.0": {
         "type": "package",
         "compile": {
           "lib/net9.0/OpenTelemetry.Api.dll": {
@@ -727,53 +420,71 @@
           }
         }
       },
-      "System.ClientModel/1.9.0": {
+      "Swashbuckle.AspNetCore/10.1.5": {
         "type": "package",
         "dependencies": {
-          "System.Memory.Data": "10.0.1"
+          "Microsoft.Extensions.ApiDescription.Server": "10.0.0",
+          "Swashbuckle.AspNetCore.Swagger": "10.1.5",
+          "Swashbuckle.AspNetCore.SwaggerGen": "10.1.5",
+          "Swashbuckle.AspNetCore.SwaggerUI": "10.1.5"
+        },
+        "build": {
+          "build/Swashbuckle.AspNetCore.props": {}
+        },
+        "buildMultiTargeting": {
+          "buildMultiTargeting/Swashbuckle.AspNetCore.props": {}
+        }
+      },
+      "Swashbuckle.AspNetCore.Swagger/10.1.5": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.OpenApi": "2.4.1"
         },
         "compile": {
-          "lib/net10.0/System.ClientModel.dll": {
-            "related": ".xml"
+          "lib/net10.0/Swashbuckle.AspNetCore.Swagger.dll": {
+            "related": ".pdb;.xml"
           }
         },
         "runtime": {
-          "lib/net10.0/System.ClientModel.dll": {
-            "related": ".xml"
+          "lib/net10.0/Swashbuckle.AspNetCore.Swagger.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
+      },
+      "Swashbuckle.AspNetCore.SwaggerGen/10.1.5": {
+        "type": "package",
+        "dependencies": {
+          "Swashbuckle.AspNetCore.Swagger": "10.1.5"
+        },
+        "compile": {
+          "lib/net10.0/Swashbuckle.AspNetCore.SwaggerGen.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Swashbuckle.AspNetCore.SwaggerGen.dll": {
+            "related": ".pdb;.xml"
           }
         }
       },
-      "System.Memory.Data/10.0.1": {
+      "Swashbuckle.AspNetCore.SwaggerUI/10.1.5": {
         "type": "package",
         "compile": {
-          "lib/net10.0/System.Memory.Data.dll": {
-            "related": ".xml"
+          "lib/net10.0/Swashbuckle.AspNetCore.SwaggerUI.dll": {
+            "related": ".pdb;.xml"
           }
         },
         "runtime": {
-          "lib/net10.0/System.Memory.Data.dll": {
-            "related": ".xml"
+          "lib/net10.0/Swashbuckle.AspNetCore.SwaggerUI.dll": {
+            "related": ".pdb;.xml"
           }
         },
-        "build": {
-          "buildTransitive/net8.0/_._": {}
-        }
-      },
-      "System.Numerics.Tensors/10.0.3": {
-        "type": "package",
-        "compile": {
-          "lib/net10.0/System.Numerics.Tensors.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net10.0/System.Numerics.Tensors.dll": {
-            "related": ".xml"
-          }
-        },
-        "build": {
-          "buildTransitive/net8.0/_._": {}
-        }
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
       },
       "MultiAgent.ServiceDefaults/1.0.0": {
         "type": "project",
@@ -800,247 +511,15 @@
     }
   },
   "libraries": {
-    "A2A/0.3.3-preview": {
-      "sha512": "mZZirfa+W9UgjPIMlAtMan2qRh2mCEBRjOpD1siw0ykMXXjh8hg71RPZcYnmZyq0k+tQv9Ox1VaKn1YLbYK/NA==",
+    "Microsoft.Extensions.AI/9.6.0": {
+      "sha512": "JrMdI7lKN23axyQpWLF2B1Pgzxo3+oO/1XNC90rlInlkdHnhOwqZ9vHlcZu5gZLtQPQLf6MbnWwgInm+GVuEpA==",
       "type": "package",
-      "path": "a2a/0.3.3-preview",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "README.md",
-        "a2a.0.3.3-preview.nupkg.sha512",
-        "a2a.nuspec",
-        "lib/net8.0/A2A.dll",
-        "lib/net8.0/A2A.xml",
-        "lib/net9.0/A2A.dll",
-        "lib/net9.0/A2A.xml",
-        "lib/netstandard2.0/A2A.dll",
-        "lib/netstandard2.0/A2A.xml",
-        "logo.png"
-      ]
-    },
-    "A2A.AspNetCore/0.3.3-preview": {
-      "sha512": "hzkHxxkWjBFGXG394vN42U9AtCBIZoV+X+yctEM83oFn6r4pJxeczCYm15T6IL4L/9Wv8gDzwkQdxs81BEmZgg==",
-      "type": "package",
-      "path": "a2a.aspnetcore/0.3.3-preview",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "README.md",
-        "a2a.aspnetcore.0.3.3-preview.nupkg.sha512",
-        "a2a.aspnetcore.nuspec",
-        "lib/net8.0/A2A.AspNetCore.dll",
-        "lib/net8.0/A2A.AspNetCore.xml",
-        "lib/net9.0/A2A.AspNetCore.dll",
-        "lib/net9.0/A2A.AspNetCore.xml",
-        "logo.png"
-      ]
-    },
-    "Google.Protobuf/3.30.2": {
-      "sha512": "Y2aOVLIt75yeeEWigg9V9YnjsEm53sADtLGq0gLhwaXpk3iu8tYSoauolyhenagA2sWno2TQ2WujI0HQd6s1Vw==",
-      "type": "package",
-      "path": "google.protobuf/3.30.2",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "google.protobuf.3.30.2.nupkg.sha512",
-        "google.protobuf.nuspec",
-        "lib/net45/Google.Protobuf.dll",
-        "lib/net45/Google.Protobuf.pdb",
-        "lib/net45/Google.Protobuf.xml",
-        "lib/net5.0/Google.Protobuf.dll",
-        "lib/net5.0/Google.Protobuf.pdb",
-        "lib/net5.0/Google.Protobuf.xml",
-        "lib/netstandard1.1/Google.Protobuf.dll",
-        "lib/netstandard1.1/Google.Protobuf.pdb",
-        "lib/netstandard1.1/Google.Protobuf.xml",
-        "lib/netstandard2.0/Google.Protobuf.dll",
-        "lib/netstandard2.0/Google.Protobuf.pdb",
-        "lib/netstandard2.0/Google.Protobuf.xml"
-      ]
-    },
-    "Microsoft.Agents.AI/1.0.0-rc4": {
-      "sha512": "fDsowhBBbWjJmm7kT0RJG4ED3I5X5xqsOg4R4gW2eR/ptzT2OLqsOJiO0rCPUrqWsPcpL0hbCD0heD4oMfirFQ==",
-      "type": "package",
-      "path": "microsoft.agents.ai/1.0.0-rc4",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "NUGET.md",
-        "icon.png",
-        "lib/net10.0/Microsoft.Agents.AI.dll",
-        "lib/net10.0/Microsoft.Agents.AI.xml",
-        "lib/net472/Microsoft.Agents.AI.dll",
-        "lib/net472/Microsoft.Agents.AI.xml",
-        "lib/net8.0/Microsoft.Agents.AI.dll",
-        "lib/net8.0/Microsoft.Agents.AI.xml",
-        "lib/net9.0/Microsoft.Agents.AI.dll",
-        "lib/net9.0/Microsoft.Agents.AI.xml",
-        "lib/netstandard2.0/Microsoft.Agents.AI.dll",
-        "lib/netstandard2.0/Microsoft.Agents.AI.xml",
-        "microsoft.agents.ai.1.0.0-rc4.nupkg.sha512",
-        "microsoft.agents.ai.nuspec"
-      ]
-    },
-    "Microsoft.Agents.AI.Abstractions/1.0.0-rc4": {
-      "sha512": "3/5gnZxpod0WUyeQtLmgXDoa7HFKLau4pp6+cHcd9A5wYuZmIXlIltonp9kw0akBbPF/0X6dYIFCq2r+yHduOw==",
-      "type": "package",
-      "path": "microsoft.agents.ai.abstractions/1.0.0-rc4",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "NUGET.md",
-        "icon.png",
-        "lib/net10.0/Microsoft.Agents.AI.Abstractions.dll",
-        "lib/net10.0/Microsoft.Agents.AI.Abstractions.xml",
-        "lib/net472/Microsoft.Agents.AI.Abstractions.dll",
-        "lib/net472/Microsoft.Agents.AI.Abstractions.xml",
-        "lib/net8.0/Microsoft.Agents.AI.Abstractions.dll",
-        "lib/net8.0/Microsoft.Agents.AI.Abstractions.xml",
-        "lib/net9.0/Microsoft.Agents.AI.Abstractions.dll",
-        "lib/net9.0/Microsoft.Agents.AI.Abstractions.xml",
-        "lib/netstandard2.0/Microsoft.Agents.AI.Abstractions.dll",
-        "lib/netstandard2.0/Microsoft.Agents.AI.Abstractions.xml",
-        "microsoft.agents.ai.abstractions.1.0.0-rc4.nupkg.sha512",
-        "microsoft.agents.ai.abstractions.nuspec"
-      ]
-    },
-    "Microsoft.Agents.AI.Hosting/1.0.0-preview.260311.1": {
-      "sha512": "SEl5lW+gKoFIHF7o9UKwTGLwbCe97UJuKw9D+lyqlXhdY8lAsFgg3azM6fqCOmMABPKIkz7QHxm6l8b+DXJi0Q==",
-      "type": "package",
-      "path": "microsoft.agents.ai.hosting/1.0.0-preview.260311.1",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "NUGET.md",
-        "icon.png",
-        "lib/net10.0/Microsoft.Agents.AI.Hosting.dll",
-        "lib/net10.0/Microsoft.Agents.AI.Hosting.xml",
-        "lib/net472/Microsoft.Agents.AI.Hosting.dll",
-        "lib/net472/Microsoft.Agents.AI.Hosting.xml",
-        "lib/net8.0/Microsoft.Agents.AI.Hosting.dll",
-        "lib/net8.0/Microsoft.Agents.AI.Hosting.xml",
-        "lib/net9.0/Microsoft.Agents.AI.Hosting.dll",
-        "lib/net9.0/Microsoft.Agents.AI.Hosting.xml",
-        "lib/netstandard2.0/Microsoft.Agents.AI.Hosting.dll",
-        "lib/netstandard2.0/Microsoft.Agents.AI.Hosting.xml",
-        "microsoft.agents.ai.hosting.1.0.0-preview.260311.1.nupkg.sha512",
-        "microsoft.agents.ai.hosting.nuspec"
-      ]
-    },
-    "Microsoft.Agents.AI.Hosting.A2A/1.0.0-preview.260311.1": {
-      "sha512": "VOd8QljWWuomG3SG/eMQyNu/2EUnfehi18fwJLhC8wgqXKJgw9wPTklUK5EFnXy0a+M2xbQNfl9jjWgnnAG7uQ==",
-      "type": "package",
-      "path": "microsoft.agents.ai.hosting.a2a/1.0.0-preview.260311.1",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "NUGET.md",
-        "icon.png",
-        "lib/net10.0/Microsoft.Agents.AI.Hosting.A2A.dll",
-        "lib/net10.0/Microsoft.Agents.AI.Hosting.A2A.xml",
-        "lib/net8.0/Microsoft.Agents.AI.Hosting.A2A.dll",
-        "lib/net8.0/Microsoft.Agents.AI.Hosting.A2A.xml",
-        "lib/net9.0/Microsoft.Agents.AI.Hosting.A2A.dll",
-        "lib/net9.0/Microsoft.Agents.AI.Hosting.A2A.xml",
-        "microsoft.agents.ai.hosting.a2a.1.0.0-preview.260311.1.nupkg.sha512",
-        "microsoft.agents.ai.hosting.a2a.nuspec"
-      ]
-    },
-    "Microsoft.Agents.AI.Hosting.A2A.AspNetCore/1.0.0-preview.260311.1": {
-      "sha512": "zvbNGjJe/TP8jCq4/HwwfguL+awsT64uaAd3ZiRUNx5TJ7eyqj870pxJzAl/ZEOctmr7a18tGYpPTb61HnBzJg==",
-      "type": "package",
-      "path": "microsoft.agents.ai.hosting.a2a.aspnetcore/1.0.0-preview.260311.1",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "NUGET.md",
-        "icon.png",
-        "lib/net10.0/Microsoft.Agents.AI.Hosting.A2A.AspNetCore.dll",
-        "lib/net10.0/Microsoft.Agents.AI.Hosting.A2A.AspNetCore.xml",
-        "lib/net8.0/Microsoft.Agents.AI.Hosting.A2A.AspNetCore.dll",
-        "lib/net8.0/Microsoft.Agents.AI.Hosting.A2A.AspNetCore.xml",
-        "lib/net9.0/Microsoft.Agents.AI.Hosting.A2A.AspNetCore.dll",
-        "lib/net9.0/Microsoft.Agents.AI.Hosting.A2A.AspNetCore.xml",
-        "microsoft.agents.ai.hosting.a2a.aspnetcore.1.0.0-preview.260311.1.nupkg.sha512",
-        "microsoft.agents.ai.hosting.a2a.aspnetcore.nuspec"
-      ]
-    },
-    "Microsoft.Agents.AI.OpenAI/1.0.0-rc4": {
-      "sha512": "tSie6i/Bo7KGPuTCAPz0sC1LX9OtRPp3ssRHBssBpd+e1noHLQULxfbMkT9x71tUgmgCOr25JaQ7My2egnseNQ==",
-      "type": "package",
-      "path": "microsoft.agents.ai.openai/1.0.0-rc4",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "NUGET.md",
-        "icon.png",
-        "lib/net10.0/Microsoft.Agents.AI.OpenAI.dll",
-        "lib/net10.0/Microsoft.Agents.AI.OpenAI.xml",
-        "lib/net472/Microsoft.Agents.AI.OpenAI.dll",
-        "lib/net472/Microsoft.Agents.AI.OpenAI.xml",
-        "lib/net8.0/Microsoft.Agents.AI.OpenAI.dll",
-        "lib/net8.0/Microsoft.Agents.AI.OpenAI.xml",
-        "lib/net9.0/Microsoft.Agents.AI.OpenAI.dll",
-        "lib/net9.0/Microsoft.Agents.AI.OpenAI.xml",
-        "lib/netstandard2.0/Microsoft.Agents.AI.OpenAI.dll",
-        "lib/netstandard2.0/Microsoft.Agents.AI.OpenAI.xml",
-        "microsoft.agents.ai.openai.1.0.0-rc4.nupkg.sha512",
-        "microsoft.agents.ai.openai.nuspec"
-      ]
-    },
-    "Microsoft.Agents.AI.Workflows/1.0.0-rc4": {
-      "sha512": "Zv7ejlslPVA2pCUdA6cCpiBZH5/x2uiiXPcs/TGeD357hIc7seLdytjD3mplt0ZK54CtcdOUEKBk949vyMZDcA==",
-      "type": "package",
-      "path": "microsoft.agents.ai.workflows/1.0.0-rc4",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "NUGET.md",
-        "icon.png",
-        "lib/net10.0/Microsoft.Agents.AI.Workflows.dll",
-        "lib/net10.0/Microsoft.Agents.AI.Workflows.xml",
-        "lib/net472/Microsoft.Agents.AI.Workflows.dll",
-        "lib/net472/Microsoft.Agents.AI.Workflows.xml",
-        "lib/net8.0/Microsoft.Agents.AI.Workflows.dll",
-        "lib/net8.0/Microsoft.Agents.AI.Workflows.xml",
-        "lib/net9.0/Microsoft.Agents.AI.Workflows.dll",
-        "lib/net9.0/Microsoft.Agents.AI.Workflows.xml",
-        "lib/netstandard2.0/Microsoft.Agents.AI.Workflows.dll",
-        "lib/netstandard2.0/Microsoft.Agents.AI.Workflows.xml",
-        "microsoft.agents.ai.workflows.1.0.0-rc4.nupkg.sha512",
-        "microsoft.agents.ai.workflows.nuspec"
-      ]
-    },
-    "Microsoft.AspNetCore.OpenApi/10.0.2": {
-      "sha512": "YuEjUNpsoZLs0I5ONt013Z+Udsz3f9sPUh1Xm59LN7+/Z8oVG/swCUYLBbANtfreiunWnoT2uk+5kst4s2jr3Q==",
-      "type": "package",
-      "path": "microsoft.aspnetcore.openapi/10.0.2",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "Icon.png",
-        "PACKAGE.md",
-        "THIRD-PARTY-NOTICES.TXT",
-        "analyzers/dotnet/cs/Microsoft.AspNetCore.OpenApi.SourceGenerators.dll",
-        "build/Microsoft.AspNetCore.OpenApi.targets",
-        "lib/net10.0/Microsoft.AspNetCore.OpenApi.dll",
-        "lib/net10.0/Microsoft.AspNetCore.OpenApi.xml",
-        "microsoft.aspnetcore.openapi.10.0.2.nupkg.sha512",
-        "microsoft.aspnetcore.openapi.nuspec"
-      ]
-    },
-    "Microsoft.Extensions.AI/10.3.0": {
-      "sha512": "zJYAHVM+zA74MNHifAyYE/jnfilI5WOnyQqnYobQZ5JW1VRSMGfQl/oqYdK3p2AdQOX8VcxSW6C+UsZYnpFB+A==",
-      "type": "package",
-      "path": "microsoft.extensions.ai/10.3.0",
+      "path": "microsoft.extensions.ai/9.6.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "Icon.png",
         "README.md",
-        "lib/net10.0/Microsoft.Extensions.AI.dll",
-        "lib/net10.0/Microsoft.Extensions.AI.xml",
         "lib/net462/Microsoft.Extensions.AI.dll",
         "lib/net462/Microsoft.Extensions.AI.xml",
         "lib/net8.0/Microsoft.Extensions.AI.dll",
@@ -1049,21 +528,19 @@
         "lib/net9.0/Microsoft.Extensions.AI.xml",
         "lib/netstandard2.0/Microsoft.Extensions.AI.dll",
         "lib/netstandard2.0/Microsoft.Extensions.AI.xml",
-        "microsoft.extensions.ai.10.3.0.nupkg.sha512",
+        "microsoft.extensions.ai.9.6.0.nupkg.sha512",
         "microsoft.extensions.ai.nuspec"
       ]
     },
-    "Microsoft.Extensions.AI.Abstractions/10.3.0": {
-      "sha512": "hDjDvUERvUH3HBMs2MDusOcGJBjAHOG5pJIU2x/HZEa4e1UthNKt89cwMi3B+ogJo6skki1XFjfgGN3ksnVqvQ==",
+    "Microsoft.Extensions.AI.Abstractions/9.6.0": {
+      "sha512": "xGO7rHg3qK8jRdriAxIrsH4voNemCf8GVmgdcPXI5gpZ6lZWqOEM4ZO8yfYxUmg7+URw2AY1h7Uc/H17g7X1Kw==",
       "type": "package",
-      "path": "microsoft.extensions.ai.abstractions/10.3.0",
+      "path": "microsoft.extensions.ai.abstractions/9.6.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "Icon.png",
         "README.md",
-        "lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll",
-        "lib/net10.0/Microsoft.Extensions.AI.Abstractions.xml",
         "lib/net462/Microsoft.Extensions.AI.Abstractions.dll",
         "lib/net462/Microsoft.Extensions.AI.Abstractions.xml",
         "lib/net8.0/Microsoft.Extensions.AI.Abstractions.dll",
@@ -1072,31 +549,8 @@
         "lib/net9.0/Microsoft.Extensions.AI.Abstractions.xml",
         "lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll",
         "lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.xml",
-        "microsoft.extensions.ai.abstractions.10.3.0.nupkg.sha512",
+        "microsoft.extensions.ai.abstractions.9.6.0.nupkg.sha512",
         "microsoft.extensions.ai.abstractions.nuspec"
-      ]
-    },
-    "Microsoft.Extensions.AI.OpenAI/10.3.0": {
-      "sha512": "+TAHAJy2+m5zazGLuwz6PbcMu6EmhxR+LmRhmz8+O3BBnfuGWVJOBGDeKAaSvIQDzKFYCLOrE4ZH0IbdLHVlKw==",
-      "type": "package",
-      "path": "microsoft.extensions.ai.openai/10.3.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "Icon.png",
-        "README.md",
-        "lib/net10.0/Microsoft.Extensions.AI.OpenAI.dll",
-        "lib/net10.0/Microsoft.Extensions.AI.OpenAI.xml",
-        "lib/net462/Microsoft.Extensions.AI.OpenAI.dll",
-        "lib/net462/Microsoft.Extensions.AI.OpenAI.xml",
-        "lib/net8.0/Microsoft.Extensions.AI.OpenAI.dll",
-        "lib/net8.0/Microsoft.Extensions.AI.OpenAI.xml",
-        "lib/net9.0/Microsoft.Extensions.AI.OpenAI.dll",
-        "lib/net9.0/Microsoft.Extensions.AI.OpenAI.xml",
-        "lib/netstandard2.0/Microsoft.Extensions.AI.OpenAI.dll",
-        "lib/netstandard2.0/Microsoft.Extensions.AI.OpenAI.xml",
-        "microsoft.extensions.ai.openai.10.3.0.nupkg.sha512",
-        "microsoft.extensions.ai.openai.nuspec"
       ]
     },
     "Microsoft.Extensions.AmbientMetadata.Application/9.9.0": {
@@ -1120,6 +574,266 @@
         "lib/netstandard2.0/Microsoft.Extensions.AmbientMetadata.Application.xml",
         "microsoft.extensions.ambientmetadata.application.9.9.0.nupkg.sha512",
         "microsoft.extensions.ambientmetadata.application.nuspec"
+      ]
+    },
+    "Microsoft.Extensions.ApiDescription.Server/10.0.0": {
+      "sha512": "NCWCGiwRwje8773yzPQhvucYnnfeR+ZoB1VRIrIMp4uaeUNw7jvEPHij3HIbwCDuNCrNcphA00KSAR9yD9qmbg==",
+      "type": "package",
+      "path": "microsoft.extensions.apidescription.server/10.0.0",
+      "hasTools": true,
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "build/Microsoft.Extensions.ApiDescription.Server.props",
+        "build/Microsoft.Extensions.ApiDescription.Server.targets",
+        "buildMultiTargeting/Microsoft.Extensions.ApiDescription.Server.props",
+        "buildMultiTargeting/Microsoft.Extensions.ApiDescription.Server.targets",
+        "microsoft.extensions.apidescription.server.10.0.0.nupkg.sha512",
+        "microsoft.extensions.apidescription.server.nuspec",
+        "tools/Newtonsoft.Json.dll",
+        "tools/dotnet-getdocument.deps.json",
+        "tools/dotnet-getdocument.dll",
+        "tools/dotnet-getdocument.runtimeconfig.json",
+        "tools/net10.0/GetDocument.Insider.deps.json",
+        "tools/net10.0/GetDocument.Insider.dll",
+        "tools/net10.0/GetDocument.Insider.exe",
+        "tools/net10.0/GetDocument.Insider.runtimeconfig.json",
+        "tools/net10.0/Microsoft.AspNetCore.Connections.Abstractions.dll",
+        "tools/net10.0/Microsoft.AspNetCore.Connections.Abstractions.xml",
+        "tools/net10.0/Microsoft.AspNetCore.Hosting.Server.Abstractions.dll",
+        "tools/net10.0/Microsoft.AspNetCore.Hosting.Server.Abstractions.xml",
+        "tools/net10.0/Microsoft.AspNetCore.Http.Features.dll",
+        "tools/net10.0/Microsoft.AspNetCore.Http.Features.xml",
+        "tools/net10.0/Microsoft.Extensions.Configuration.Abstractions.dll",
+        "tools/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+        "tools/net10.0/Microsoft.Extensions.Diagnostics.Abstractions.dll",
+        "tools/net10.0/Microsoft.Extensions.Features.dll",
+        "tools/net10.0/Microsoft.Extensions.Features.xml",
+        "tools/net10.0/Microsoft.Extensions.FileProviders.Abstractions.dll",
+        "tools/net10.0/Microsoft.Extensions.Hosting.Abstractions.dll",
+        "tools/net10.0/Microsoft.Extensions.Logging.Abstractions.dll",
+        "tools/net10.0/Microsoft.Extensions.Options.dll",
+        "tools/net10.0/Microsoft.Extensions.Primitives.dll",
+        "tools/net10.0/Microsoft.Net.Http.Headers.dll",
+        "tools/net10.0/Microsoft.Net.Http.Headers.xml",
+        "tools/net10.0/Microsoft.OpenApi.dll",
+        "tools/net462-x86/GetDocument.Insider.exe",
+        "tools/net462-x86/GetDocument.Insider.exe.config",
+        "tools/net462-x86/Microsoft.Bcl.AsyncInterfaces.dll",
+        "tools/net462-x86/Microsoft.OpenApi.dll",
+        "tools/net462-x86/Microsoft.Win32.Primitives.dll",
+        "tools/net462-x86/System.AppContext.dll",
+        "tools/net462-x86/System.Buffers.dll",
+        "tools/net462-x86/System.Collections.Concurrent.dll",
+        "tools/net462-x86/System.Collections.NonGeneric.dll",
+        "tools/net462-x86/System.Collections.Specialized.dll",
+        "tools/net462-x86/System.Collections.dll",
+        "tools/net462-x86/System.ComponentModel.EventBasedAsync.dll",
+        "tools/net462-x86/System.ComponentModel.Primitives.dll",
+        "tools/net462-x86/System.ComponentModel.TypeConverter.dll",
+        "tools/net462-x86/System.ComponentModel.dll",
+        "tools/net462-x86/System.Console.dll",
+        "tools/net462-x86/System.Data.Common.dll",
+        "tools/net462-x86/System.Diagnostics.Contracts.dll",
+        "tools/net462-x86/System.Diagnostics.Debug.dll",
+        "tools/net462-x86/System.Diagnostics.DiagnosticSource.dll",
+        "tools/net462-x86/System.Diagnostics.FileVersionInfo.dll",
+        "tools/net462-x86/System.Diagnostics.Process.dll",
+        "tools/net462-x86/System.Diagnostics.StackTrace.dll",
+        "tools/net462-x86/System.Diagnostics.TextWriterTraceListener.dll",
+        "tools/net462-x86/System.Diagnostics.Tools.dll",
+        "tools/net462-x86/System.Diagnostics.TraceSource.dll",
+        "tools/net462-x86/System.Diagnostics.Tracing.dll",
+        "tools/net462-x86/System.Drawing.Primitives.dll",
+        "tools/net462-x86/System.Dynamic.Runtime.dll",
+        "tools/net462-x86/System.Globalization.Calendars.dll",
+        "tools/net462-x86/System.Globalization.Extensions.dll",
+        "tools/net462-x86/System.Globalization.dll",
+        "tools/net462-x86/System.IO.Compression.ZipFile.dll",
+        "tools/net462-x86/System.IO.Compression.dll",
+        "tools/net462-x86/System.IO.FileSystem.DriveInfo.dll",
+        "tools/net462-x86/System.IO.FileSystem.Primitives.dll",
+        "tools/net462-x86/System.IO.FileSystem.Watcher.dll",
+        "tools/net462-x86/System.IO.FileSystem.dll",
+        "tools/net462-x86/System.IO.IsolatedStorage.dll",
+        "tools/net462-x86/System.IO.MemoryMappedFiles.dll",
+        "tools/net462-x86/System.IO.Pipes.dll",
+        "tools/net462-x86/System.IO.UnmanagedMemoryStream.dll",
+        "tools/net462-x86/System.IO.dll",
+        "tools/net462-x86/System.Linq.Expressions.dll",
+        "tools/net462-x86/System.Linq.Parallel.dll",
+        "tools/net462-x86/System.Linq.Queryable.dll",
+        "tools/net462-x86/System.Linq.dll",
+        "tools/net462-x86/System.Memory.dll",
+        "tools/net462-x86/System.Net.Http.dll",
+        "tools/net462-x86/System.Net.NameResolution.dll",
+        "tools/net462-x86/System.Net.NetworkInformation.dll",
+        "tools/net462-x86/System.Net.Ping.dll",
+        "tools/net462-x86/System.Net.Primitives.dll",
+        "tools/net462-x86/System.Net.Requests.dll",
+        "tools/net462-x86/System.Net.Security.dll",
+        "tools/net462-x86/System.Net.Sockets.dll",
+        "tools/net462-x86/System.Net.WebHeaderCollection.dll",
+        "tools/net462-x86/System.Net.WebSockets.Client.dll",
+        "tools/net462-x86/System.Net.WebSockets.dll",
+        "tools/net462-x86/System.Numerics.Vectors.dll",
+        "tools/net462-x86/System.ObjectModel.dll",
+        "tools/net462-x86/System.Reflection.Extensions.dll",
+        "tools/net462-x86/System.Reflection.Primitives.dll",
+        "tools/net462-x86/System.Reflection.dll",
+        "tools/net462-x86/System.Resources.Reader.dll",
+        "tools/net462-x86/System.Resources.ResourceManager.dll",
+        "tools/net462-x86/System.Resources.Writer.dll",
+        "tools/net462-x86/System.Runtime.CompilerServices.Unsafe.dll",
+        "tools/net462-x86/System.Runtime.CompilerServices.VisualC.dll",
+        "tools/net462-x86/System.Runtime.Extensions.dll",
+        "tools/net462-x86/System.Runtime.Handles.dll",
+        "tools/net462-x86/System.Runtime.InteropServices.RuntimeInformation.dll",
+        "tools/net462-x86/System.Runtime.InteropServices.dll",
+        "tools/net462-x86/System.Runtime.Numerics.dll",
+        "tools/net462-x86/System.Runtime.Serialization.Formatters.dll",
+        "tools/net462-x86/System.Runtime.Serialization.Json.dll",
+        "tools/net462-x86/System.Runtime.Serialization.Primitives.dll",
+        "tools/net462-x86/System.Runtime.Serialization.Xml.dll",
+        "tools/net462-x86/System.Runtime.dll",
+        "tools/net462-x86/System.Security.Claims.dll",
+        "tools/net462-x86/System.Security.Cryptography.Algorithms.dll",
+        "tools/net462-x86/System.Security.Cryptography.Csp.dll",
+        "tools/net462-x86/System.Security.Cryptography.Encoding.dll",
+        "tools/net462-x86/System.Security.Cryptography.Primitives.dll",
+        "tools/net462-x86/System.Security.Cryptography.X509Certificates.dll",
+        "tools/net462-x86/System.Security.Principal.dll",
+        "tools/net462-x86/System.Security.SecureString.dll",
+        "tools/net462-x86/System.Text.Encoding.Extensions.dll",
+        "tools/net462-x86/System.Text.Encoding.dll",
+        "tools/net462-x86/System.Text.Encodings.Web.dll",
+        "tools/net462-x86/System.Text.Json.dll",
+        "tools/net462-x86/System.Text.RegularExpressions.dll",
+        "tools/net462-x86/System.Threading.Overlapped.dll",
+        "tools/net462-x86/System.Threading.Tasks.Extensions.dll",
+        "tools/net462-x86/System.Threading.Tasks.Parallel.dll",
+        "tools/net462-x86/System.Threading.Tasks.dll",
+        "tools/net462-x86/System.Threading.Thread.dll",
+        "tools/net462-x86/System.Threading.ThreadPool.dll",
+        "tools/net462-x86/System.Threading.Timer.dll",
+        "tools/net462-x86/System.Threading.dll",
+        "tools/net462-x86/System.ValueTuple.dll",
+        "tools/net462-x86/System.Xml.ReaderWriter.dll",
+        "tools/net462-x86/System.Xml.XDocument.dll",
+        "tools/net462-x86/System.Xml.XPath.XDocument.dll",
+        "tools/net462-x86/System.Xml.XPath.dll",
+        "tools/net462-x86/System.Xml.XmlDocument.dll",
+        "tools/net462-x86/System.Xml.XmlSerializer.dll",
+        "tools/net462-x86/netstandard.dll",
+        "tools/net462/GetDocument.Insider.exe",
+        "tools/net462/GetDocument.Insider.exe.config",
+        "tools/net462/Microsoft.Bcl.AsyncInterfaces.dll",
+        "tools/net462/Microsoft.OpenApi.dll",
+        "tools/net462/Microsoft.Win32.Primitives.dll",
+        "tools/net462/System.AppContext.dll",
+        "tools/net462/System.Buffers.dll",
+        "tools/net462/System.Collections.Concurrent.dll",
+        "tools/net462/System.Collections.NonGeneric.dll",
+        "tools/net462/System.Collections.Specialized.dll",
+        "tools/net462/System.Collections.dll",
+        "tools/net462/System.ComponentModel.EventBasedAsync.dll",
+        "tools/net462/System.ComponentModel.Primitives.dll",
+        "tools/net462/System.ComponentModel.TypeConverter.dll",
+        "tools/net462/System.ComponentModel.dll",
+        "tools/net462/System.Console.dll",
+        "tools/net462/System.Data.Common.dll",
+        "tools/net462/System.Diagnostics.Contracts.dll",
+        "tools/net462/System.Diagnostics.Debug.dll",
+        "tools/net462/System.Diagnostics.DiagnosticSource.dll",
+        "tools/net462/System.Diagnostics.FileVersionInfo.dll",
+        "tools/net462/System.Diagnostics.Process.dll",
+        "tools/net462/System.Diagnostics.StackTrace.dll",
+        "tools/net462/System.Diagnostics.TextWriterTraceListener.dll",
+        "tools/net462/System.Diagnostics.Tools.dll",
+        "tools/net462/System.Diagnostics.TraceSource.dll",
+        "tools/net462/System.Diagnostics.Tracing.dll",
+        "tools/net462/System.Drawing.Primitives.dll",
+        "tools/net462/System.Dynamic.Runtime.dll",
+        "tools/net462/System.Globalization.Calendars.dll",
+        "tools/net462/System.Globalization.Extensions.dll",
+        "tools/net462/System.Globalization.dll",
+        "tools/net462/System.IO.Compression.ZipFile.dll",
+        "tools/net462/System.IO.Compression.dll",
+        "tools/net462/System.IO.FileSystem.DriveInfo.dll",
+        "tools/net462/System.IO.FileSystem.Primitives.dll",
+        "tools/net462/System.IO.FileSystem.Watcher.dll",
+        "tools/net462/System.IO.FileSystem.dll",
+        "tools/net462/System.IO.IsolatedStorage.dll",
+        "tools/net462/System.IO.MemoryMappedFiles.dll",
+        "tools/net462/System.IO.Pipes.dll",
+        "tools/net462/System.IO.UnmanagedMemoryStream.dll",
+        "tools/net462/System.IO.dll",
+        "tools/net462/System.Linq.Expressions.dll",
+        "tools/net462/System.Linq.Parallel.dll",
+        "tools/net462/System.Linq.Queryable.dll",
+        "tools/net462/System.Linq.dll",
+        "tools/net462/System.Memory.dll",
+        "tools/net462/System.Net.Http.dll",
+        "tools/net462/System.Net.NameResolution.dll",
+        "tools/net462/System.Net.NetworkInformation.dll",
+        "tools/net462/System.Net.Ping.dll",
+        "tools/net462/System.Net.Primitives.dll",
+        "tools/net462/System.Net.Requests.dll",
+        "tools/net462/System.Net.Security.dll",
+        "tools/net462/System.Net.Sockets.dll",
+        "tools/net462/System.Net.WebHeaderCollection.dll",
+        "tools/net462/System.Net.WebSockets.Client.dll",
+        "tools/net462/System.Net.WebSockets.dll",
+        "tools/net462/System.Numerics.Vectors.dll",
+        "tools/net462/System.ObjectModel.dll",
+        "tools/net462/System.Reflection.Extensions.dll",
+        "tools/net462/System.Reflection.Primitives.dll",
+        "tools/net462/System.Reflection.dll",
+        "tools/net462/System.Resources.Reader.dll",
+        "tools/net462/System.Resources.ResourceManager.dll",
+        "tools/net462/System.Resources.Writer.dll",
+        "tools/net462/System.Runtime.CompilerServices.Unsafe.dll",
+        "tools/net462/System.Runtime.CompilerServices.VisualC.dll",
+        "tools/net462/System.Runtime.Extensions.dll",
+        "tools/net462/System.Runtime.Handles.dll",
+        "tools/net462/System.Runtime.InteropServices.RuntimeInformation.dll",
+        "tools/net462/System.Runtime.InteropServices.dll",
+        "tools/net462/System.Runtime.Numerics.dll",
+        "tools/net462/System.Runtime.Serialization.Formatters.dll",
+        "tools/net462/System.Runtime.Serialization.Json.dll",
+        "tools/net462/System.Runtime.Serialization.Primitives.dll",
+        "tools/net462/System.Runtime.Serialization.Xml.dll",
+        "tools/net462/System.Runtime.dll",
+        "tools/net462/System.Security.Claims.dll",
+        "tools/net462/System.Security.Cryptography.Algorithms.dll",
+        "tools/net462/System.Security.Cryptography.Csp.dll",
+        "tools/net462/System.Security.Cryptography.Encoding.dll",
+        "tools/net462/System.Security.Cryptography.Primitives.dll",
+        "tools/net462/System.Security.Cryptography.X509Certificates.dll",
+        "tools/net462/System.Security.Principal.dll",
+        "tools/net462/System.Security.SecureString.dll",
+        "tools/net462/System.Text.Encoding.Extensions.dll",
+        "tools/net462/System.Text.Encoding.dll",
+        "tools/net462/System.Text.Encodings.Web.dll",
+        "tools/net462/System.Text.Json.dll",
+        "tools/net462/System.Text.RegularExpressions.dll",
+        "tools/net462/System.Threading.Overlapped.dll",
+        "tools/net462/System.Threading.Tasks.Extensions.dll",
+        "tools/net462/System.Threading.Tasks.Parallel.dll",
+        "tools/net462/System.Threading.Tasks.dll",
+        "tools/net462/System.Threading.Thread.dll",
+        "tools/net462/System.Threading.ThreadPool.dll",
+        "tools/net462/System.Threading.Timer.dll",
+        "tools/net462/System.Threading.dll",
+        "tools/net462/System.ValueTuple.dll",
+        "tools/net462/System.Xml.ReaderWriter.dll",
+        "tools/net462/System.Xml.XDocument.dll",
+        "tools/net462/System.Xml.XPath.XDocument.dll",
+        "tools/net462/System.Xml.XPath.dll",
+        "tools/net462/System.Xml.XmlDocument.dll",
+        "tools/net462/System.Xml.XmlSerializer.dll",
+        "tools/net462/netstandard.dll"
       ]
     },
     "Microsoft.Extensions.Compliance.Abstractions/9.9.0": {
@@ -1348,50 +1062,10 @@
         "microsoft.extensions.telemetry.abstractions.nuspec"
       ]
     },
-    "Microsoft.Extensions.VectorData.Abstractions/9.7.0": {
-      "sha512": "Vth/omSCX2vR0JabzSRU/hdPhr0CvUVZlaS2lJPWHrEwvak8ntrQLDtLMtMiWKSvviGBe/WmjUW8gA3qqn9tjw==",
+    "Microsoft.OpenApi/2.4.1": {
+      "sha512": "u7QhXCISMQuab3flasb1hoaiERmUqyWsW7tmQODyILoQ7mJV5IRGM+2KKZYo0QUfC13evEOcHAb6TPWgqEQtrw==",
       "type": "package",
-      "path": "microsoft.extensions.vectordata.abstractions/9.7.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "NUGET.md",
-        "PACKAGE.md",
-        "icon.png",
-        "lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll",
-        "lib/net462/Microsoft.Extensions.VectorData.Abstractions.xml",
-        "lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll",
-        "lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.xml",
-        "lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll",
-        "lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.xml",
-        "microsoft.extensions.vectordata.abstractions.9.7.0.nupkg.sha512",
-        "microsoft.extensions.vectordata.abstractions.nuspec",
-        "neticon.png"
-      ]
-    },
-    "Microsoft.ML.Tokenizers/2.0.0": {
-      "sha512": "+b8lT4cLLO/sBR2hjvE/qG6qrZG15h7/PBvnIrzTh4xDaAxdHUY6449rC+1pHzQUsBiCHZVbj+VMn+xS0sL7TA==",
-      "type": "package",
-      "path": "microsoft.ml.tokenizers/2.0.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "LICENSE",
-        "PACKAGE.md",
-        "THIRD-PARTY-NOTICES.TXT",
-        "lib/net8.0/Microsoft.ML.Tokenizers.dll",
-        "lib/net8.0/Microsoft.ML.Tokenizers.xml",
-        "lib/netstandard2.0/Microsoft.ML.Tokenizers.dll",
-        "lib/netstandard2.0/Microsoft.ML.Tokenizers.xml",
-        "microsoft.ml.tokenizers.2.0.0.nupkg.sha512",
-        "microsoft.ml.tokenizers.nuspec",
-        "mlnetlogo.png"
-      ]
-    },
-    "Microsoft.OpenApi/2.0.0": {
-      "sha512": "GGYLfzV/G/ct80OZ45JxnWP7NvMX1BCugn/lX7TH5o0lcVaviavsLMTxmFV2AybXWjbi3h6FF1vgZiTK6PXndw==",
-      "type": "package",
-      "path": "microsoft.openapi/2.0.0",
+      "path": "microsoft.openapi/2.4.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -1402,69 +1076,8 @@
         "lib/netstandard2.0/Microsoft.OpenApi.dll",
         "lib/netstandard2.0/Microsoft.OpenApi.pdb",
         "lib/netstandard2.0/Microsoft.OpenApi.xml",
-        "microsoft.openapi.2.0.0.nupkg.sha512",
+        "microsoft.openapi.2.4.1.nupkg.sha512",
         "microsoft.openapi.nuspec"
-      ]
-    },
-    "ModelContextProtocol/1.1.0": {
-      "sha512": "dr7MeQocnOD9exXF2TIZc/80xp/wNVw3WpJZlz0X+ezMcOCXXkAwdMbpM5hohvnXw+KF29iaaYPJwUFbni+NCQ==",
-      "type": "package",
-      "path": "modelcontextprotocol/1.1.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "README.md",
-        "lib/net10.0/ModelContextProtocol.dll",
-        "lib/net10.0/ModelContextProtocol.xml",
-        "lib/net8.0/ModelContextProtocol.dll",
-        "lib/net8.0/ModelContextProtocol.xml",
-        "lib/net9.0/ModelContextProtocol.dll",
-        "lib/net9.0/ModelContextProtocol.xml",
-        "lib/netstandard2.0/ModelContextProtocol.dll",
-        "lib/netstandard2.0/ModelContextProtocol.xml",
-        "logo.png",
-        "modelcontextprotocol.1.1.0.nupkg.sha512",
-        "modelcontextprotocol.nuspec"
-      ]
-    },
-    "ModelContextProtocol.Core/1.1.0": {
-      "sha512": "3E/qGSPxAnuenD8uBT2NsHCP91ztn4WC9SfV7miKjpzDYQgVvGwbxnPhhZ8PAvltYWJ/P4wWbRmJ+2M5rZkrDQ==",
-      "type": "package",
-      "path": "modelcontextprotocol.core/1.1.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "README.md",
-        "analyzers/dotnet/cs/ModelContextProtocol.Analyzers.dll",
-        "lib/net10.0/ModelContextProtocol.Core.dll",
-        "lib/net10.0/ModelContextProtocol.Core.xml",
-        "lib/net8.0/ModelContextProtocol.Core.dll",
-        "lib/net8.0/ModelContextProtocol.Core.xml",
-        "lib/net9.0/ModelContextProtocol.Core.dll",
-        "lib/net9.0/ModelContextProtocol.Core.xml",
-        "lib/netstandard2.0/ModelContextProtocol.Core.dll",
-        "lib/netstandard2.0/ModelContextProtocol.Core.xml",
-        "logo.png",
-        "modelcontextprotocol.core.1.1.0.nupkg.sha512",
-        "modelcontextprotocol.core.nuspec"
-      ]
-    },
-    "OpenAI/2.8.0": {
-      "sha512": "KcYpZ9IhuxFD2hGAJlL5vABtkr00CjeJU0SY8CjZQyzvzkzLop8jhdX3iDvteVJg6e3y4TEiY+Kti4gDJAagnA==",
-      "type": "package",
-      "path": "openai/2.8.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "CHANGELOG.md",
-        "OpenAI.png",
-        "README.md",
-        "lib/net8.0/OpenAI.dll",
-        "lib/net8.0/OpenAI.xml",
-        "lib/netstandard2.0/OpenAI.dll",
-        "lib/netstandard2.0/OpenAI.xml",
-        "openai.2.8.0.nupkg.sha512",
-        "openai.nuspec"
       ]
     },
     "OpenTelemetry/1.12.0": {
@@ -1502,10 +1115,10 @@
         "opentelemetry.nuspec"
       ]
     },
-    "OpenTelemetry.Api/1.13.1": {
-      "sha512": "tieglRERo7Rgu8oE8aamnuXCMPEW5fXIqO5ngTMCNk9pOEXanc0SdQ86ZAD1goNiGcjWHn+P3WMZp0FZSJgCoQ==",
+    "OpenTelemetry.Api/1.12.0": {
+      "sha512": "Xt0qldi+iE2szGrM3jAqzEMEJd48YBtqI6mge0+ArXTZg3aTpRmyhL6CKKl3bLioaFSSVbBpEbPin8u6Z46Yrw==",
       "type": "package",
-      "path": "opentelemetry.api/1.13.1",
+      "path": "opentelemetry.api/1.12.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -1529,7 +1142,7 @@
         "lib/netstandard2.0/OpenTelemetry.Api.dll-keyless.sig",
         "lib/netstandard2.0/OpenTelemetry.Api.xml",
         "opentelemetry-icon-color.png",
-        "opentelemetry.api.1.13.1.nupkg.sha512",
+        "opentelemetry.api.1.12.0.nupkg.sha512",
         "opentelemetry.api.nuspec"
       ]
     },
@@ -1769,85 +1382,81 @@
         "polly.ratelimiting.nuspec"
       ]
     },
-    "System.ClientModel/1.9.0": {
-      "sha512": "1wdwKtMMMEFEYsxJmtrOd3G+7zVOVO3MlVZAsbKv9H0PnIx6J27fYAarMn0eQS0vKJPQL018DOb7YRK1O97p0A==",
+    "Swashbuckle.AspNetCore/10.1.5": {
+      "sha512": "/eNk9z/8quXhDX14o3XLbwAX/84uIWSbiUD7cI/UrQnoBMOiyAtzKxNEJUtf/TyxjFpcXxE9FAfLvtbNpxHBSg==",
       "type": "package",
-      "path": "system.clientmodel/1.9.0",
+      "path": "swashbuckle.aspnetcore/10.1.5",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "CHANGELOG.md",
-        "DotNetPackageIcon.png",
-        "README.md",
-        "analyzers/dotnet/cs/System.ClientModel.SourceGeneration.dll",
-        "lib/net10.0/System.ClientModel.dll",
-        "lib/net10.0/System.ClientModel.xml",
-        "lib/net8.0/System.ClientModel.dll",
-        "lib/net8.0/System.ClientModel.xml",
-        "lib/net9.0/System.ClientModel.dll",
-        "lib/net9.0/System.ClientModel.xml",
-        "lib/netstandard2.0/System.ClientModel.dll",
-        "lib/netstandard2.0/System.ClientModel.xml",
-        "system.clientmodel.1.9.0.nupkg.sha512",
-        "system.clientmodel.nuspec"
+        "build/Swashbuckle.AspNetCore.props",
+        "buildMultiTargeting/Swashbuckle.AspNetCore.props",
+        "docs/package-readme.md",
+        "swashbuckle.aspnetcore.10.1.5.nupkg.sha512",
+        "swashbuckle.aspnetcore.nuspec"
       ]
     },
-    "System.Memory.Data/10.0.1": {
-      "sha512": "BZC4mhdL569AXV56ep9YO6ShjhxFXGP7SwVX0Bc/e0dJPWnS6aBEXZJXqh64RVx8HquqWHkJUINBydLRQ1yq0g==",
+    "Swashbuckle.AspNetCore.Swagger/10.1.5": {
+      "sha512": "s4Mct6+Ob0LK9vYVaZcYi/RFFCOEJNjf6nJ5ZPoxtpdFSlzR6i9AHI7Vl44obX8cynRxJW7prA1IUabkiXolFg==",
       "type": "package",
-      "path": "system.memory.data/10.0.1",
+      "path": "swashbuckle.aspnetcore.swagger/10.1.5",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "Icon.png",
-        "PACKAGE.md",
-        "THIRD-PARTY-NOTICES.TXT",
-        "buildTransitive/net461/System.Memory.Data.targets",
-        "buildTransitive/net462/_._",
-        "buildTransitive/net8.0/_._",
-        "buildTransitive/netcoreapp2.0/System.Memory.Data.targets",
-        "lib/net10.0/System.Memory.Data.dll",
-        "lib/net10.0/System.Memory.Data.xml",
-        "lib/net462/System.Memory.Data.dll",
-        "lib/net462/System.Memory.Data.xml",
-        "lib/net8.0/System.Memory.Data.dll",
-        "lib/net8.0/System.Memory.Data.xml",
-        "lib/net9.0/System.Memory.Data.dll",
-        "lib/net9.0/System.Memory.Data.xml",
-        "lib/netstandard2.0/System.Memory.Data.dll",
-        "lib/netstandard2.0/System.Memory.Data.xml",
-        "system.memory.data.10.0.1.nupkg.sha512",
-        "system.memory.data.nuspec",
-        "useSharedDesignerContext.txt"
+        "lib/net10.0/Swashbuckle.AspNetCore.Swagger.dll",
+        "lib/net10.0/Swashbuckle.AspNetCore.Swagger.pdb",
+        "lib/net10.0/Swashbuckle.AspNetCore.Swagger.xml",
+        "lib/net8.0/Swashbuckle.AspNetCore.Swagger.dll",
+        "lib/net8.0/Swashbuckle.AspNetCore.Swagger.pdb",
+        "lib/net8.0/Swashbuckle.AspNetCore.Swagger.xml",
+        "lib/net9.0/Swashbuckle.AspNetCore.Swagger.dll",
+        "lib/net9.0/Swashbuckle.AspNetCore.Swagger.pdb",
+        "lib/net9.0/Swashbuckle.AspNetCore.Swagger.xml",
+        "package-readme.md",
+        "swashbuckle.aspnetcore.swagger.10.1.5.nupkg.sha512",
+        "swashbuckle.aspnetcore.swagger.nuspec"
       ]
     },
-    "System.Numerics.Tensors/10.0.3": {
-      "sha512": "calKQ5nqV98lVRSCV7KFrlmw7nE7z6qIBWnMP+f7xAzY9H1cO15zJmkuZYM9RxYXDzQyI60/+dXd65UUY4HZFQ==",
+    "Swashbuckle.AspNetCore.SwaggerGen/10.1.5": {
+      "sha512": "ysQIRgqnx4Vb/9+r3xnEAiaxYmiBHO8jTg7ACaCh+R3Sn+ZKCWKD6nyu0ph3okP91wFSh/6LgccjeLUaQHV+ZA==",
       "type": "package",
-      "path": "system.numerics.tensors/10.0.3",
+      "path": "swashbuckle.aspnetcore.swaggergen/10.1.5",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "Icon.png",
-        "PACKAGE.md",
-        "THIRD-PARTY-NOTICES.TXT",
-        "buildTransitive/net461/System.Numerics.Tensors.targets",
-        "buildTransitive/net462/_._",
-        "buildTransitive/net8.0/_._",
-        "buildTransitive/netcoreapp2.0/System.Numerics.Tensors.targets",
-        "lib/net10.0/System.Numerics.Tensors.dll",
-        "lib/net10.0/System.Numerics.Tensors.xml",
-        "lib/net462/System.Numerics.Tensors.dll",
-        "lib/net462/System.Numerics.Tensors.xml",
-        "lib/net8.0/System.Numerics.Tensors.dll",
-        "lib/net8.0/System.Numerics.Tensors.xml",
-        "lib/net9.0/System.Numerics.Tensors.dll",
-        "lib/net9.0/System.Numerics.Tensors.xml",
-        "lib/netstandard2.0/System.Numerics.Tensors.dll",
-        "lib/netstandard2.0/System.Numerics.Tensors.xml",
-        "system.numerics.tensors.10.0.3.nupkg.sha512",
-        "system.numerics.tensors.nuspec",
-        "useSharedDesignerContext.txt"
+        "lib/net10.0/Swashbuckle.AspNetCore.SwaggerGen.dll",
+        "lib/net10.0/Swashbuckle.AspNetCore.SwaggerGen.pdb",
+        "lib/net10.0/Swashbuckle.AspNetCore.SwaggerGen.xml",
+        "lib/net8.0/Swashbuckle.AspNetCore.SwaggerGen.dll",
+        "lib/net8.0/Swashbuckle.AspNetCore.SwaggerGen.pdb",
+        "lib/net8.0/Swashbuckle.AspNetCore.SwaggerGen.xml",
+        "lib/net9.0/Swashbuckle.AspNetCore.SwaggerGen.dll",
+        "lib/net9.0/Swashbuckle.AspNetCore.SwaggerGen.pdb",
+        "lib/net9.0/Swashbuckle.AspNetCore.SwaggerGen.xml",
+        "package-readme.md",
+        "swashbuckle.aspnetcore.swaggergen.10.1.5.nupkg.sha512",
+        "swashbuckle.aspnetcore.swaggergen.nuspec"
+      ]
+    },
+    "Swashbuckle.AspNetCore.SwaggerUI/10.1.5": {
+      "sha512": "tQWVKNJWW7lf6S0bv22+7yfxK5IKzvsMeueF4XHSziBfREhLKt42OKzi6/1nINmyGlM4hGbR8aSMg72dLLVBLw==",
+      "type": "package",
+      "path": "swashbuckle.aspnetcore.swaggerui/10.1.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net10.0/Swashbuckle.AspNetCore.SwaggerUI.dll",
+        "lib/net10.0/Swashbuckle.AspNetCore.SwaggerUI.pdb",
+        "lib/net10.0/Swashbuckle.AspNetCore.SwaggerUI.xml",
+        "lib/net8.0/Swashbuckle.AspNetCore.SwaggerUI.dll",
+        "lib/net8.0/Swashbuckle.AspNetCore.SwaggerUI.pdb",
+        "lib/net8.0/Swashbuckle.AspNetCore.SwaggerUI.xml",
+        "lib/net9.0/Swashbuckle.AspNetCore.SwaggerUI.dll",
+        "lib/net9.0/Swashbuckle.AspNetCore.SwaggerUI.pdb",
+        "lib/net9.0/Swashbuckle.AspNetCore.SwaggerUI.xml",
+        "package-readme.md",
+        "swashbuckle.aspnetcore.swaggerui.10.1.5.nupkg.sha512",
+        "swashbuckle.aspnetcore.swaggerui.nuspec"
       ]
     },
     "MultiAgent.ServiceDefaults/1.0.0": {
@@ -1858,13 +1467,11 @@
   },
   "projectFileDependencyGroups": {
     "net10.0": [
-      "Microsoft.Agents.AI >= 1.0.0-rc4",
-      "Microsoft.Agents.AI.Hosting.A2A.AspNetCore >= 1.0.0-preview.260311.1",
-      "Microsoft.Agents.AI.OpenAI >= 1.0.0-rc4",
-      "Microsoft.Agents.AI.Workflows >= 1.0.0-rc4",
-      "Microsoft.AspNetCore.OpenApi >= 10.0.2",
-      "ModelContextProtocol >= 1.1.0",
-      "MultiAgent.ServiceDefaults >= 1.0.0"
+      "Microsoft.Extensions.AI >= 9.6.0",
+      "Microsoft.Extensions.AI.Abstractions >= 9.6.0",
+      "MultiAgent.ServiceDefaults >= 1.0.0",
+      "Swashbuckle.AspNetCore >= 10.1.5",
+      "Swashbuckle.AspNetCore.SwaggerGen >= 10.1.5"
     ]
   },
   "packageFolders": {
@@ -1924,29 +1531,21 @@
       "net10.0": {
         "targetAlias": "net10.0",
         "dependencies": {
-          "Microsoft.Agents.AI": {
+          "Microsoft.Extensions.AI": {
             "target": "Package",
-            "version": "[1.0.0-rc4, )"
+            "version": "[9.6.0, )"
           },
-          "Microsoft.Agents.AI.Hosting.A2A.AspNetCore": {
+          "Microsoft.Extensions.AI.Abstractions": {
             "target": "Package",
-            "version": "[1.0.0-preview.260311.1, )"
+            "version": "[9.6.0, )"
           },
-          "Microsoft.Agents.AI.OpenAI": {
+          "Swashbuckle.AspNetCore": {
             "target": "Package",
-            "version": "[1.0.0-rc4, )"
+            "version": "[10.1.5, )"
           },
-          "Microsoft.Agents.AI.Workflows": {
+          "Swashbuckle.AspNetCore.SwaggerGen": {
             "target": "Package",
-            "version": "[1.0.0-rc4, )"
-          },
-          "Microsoft.AspNetCore.OpenApi": {
-            "target": "Package",
-            "version": "[10.0.2, )"
-          },
-          "ModelContextProtocol": {
-            "target": "Package",
-            "version": "[1.1.0, )"
+            "version": "[10.1.5, )"
           }
         },
         "imports": [
