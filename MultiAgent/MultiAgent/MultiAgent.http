@@ -1,0 +1,6 @@
+@MultiAgent_HostAddress = http://localhost:5290
+
+GET {{MultiAgent_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
