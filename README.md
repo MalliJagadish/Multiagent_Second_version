@@ -249,7 +249,7 @@ Multiagent_Second_version/
 
 | Tool | Version |
 |------|---------|
-| [.NET SDK](https://dotnet.microsoft.com/download) | 10.0 or later |
+| [.NET SDK](https://dotnet.microsoft.com/download) | 10.0 |
 | [Node.js](https://nodejs.org/) | 22.x or later |
 | npm or pnpm | Latest |
 | A GitHub account | — |
