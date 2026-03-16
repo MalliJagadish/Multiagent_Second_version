@@ -8,7 +8,6 @@ namespace MultiAgent.Agents;
 /// <summary>
 /// GitHub Models IChatClient — FREE, uses existing GitHub PAT.
 /// Model: openai/gpt-4.1-nano
-/// Free: 150 req/day
 /// Used for: ReviewAgent (different vendor = unbiased review)
 /// </summary>
 public class GitHubModelsChatClient : IChatClient

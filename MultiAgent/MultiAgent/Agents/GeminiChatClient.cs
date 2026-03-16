@@ -8,7 +8,6 @@ namespace MultiAgent.Agents;
 /// <summary>
 /// Google Gemini IChatClient adapter — FREE tier.
 /// Model: gemini-2.0-flash
-/// Free: 1,500 req/day · 15 req/min
 /// Key: aistudio.google.com → Get API Key
 /// </summary>
 public class GeminiChatClient : IChatClient

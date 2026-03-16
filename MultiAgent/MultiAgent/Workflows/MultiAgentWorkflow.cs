@@ -33,6 +33,7 @@ public class MultiAgentWorkflow
     private readonly ILogger<MultiAgentWorkflow> _logger;
 
     private const int MaxReviewRounds = 2;
+    private static readonly GeminiThrottler _geminiThrottler = new();
 
     public MultiAgentWorkflow(
         IConfiguration config, GitHubService github,
@@ -592,6 +593,9 @@ public class MultiAgentWorkflow
         var unresolvedCount = 0;
         var failedCount = 0;
 
+        // ── FIX: track failed findings so they appear in the PR summary ──
+        var failedFindings = new List<ReviewLogEntry>();
+
         foreach (var entry in state.InternalReviewLog)
         {
             var isResolved = entry.FinalStatus == "resolved";
@@ -670,6 +674,7 @@ public class MultiAgentWorkflow
                     _logger.LogWarning("File comment also failed for {File}: {Msg}",
                         entry.Finding.FilePath, ex2.Message);
                     failedCount++;
+                    failedFindings.Add(entry);
                 }
             }
         }
@@ -678,6 +683,25 @@ public class MultiAgentWorkflow
             .Any(e => e.FinalStatus == "unresolved" &&
                 (e.Finding.Severity is FindingSeverity.Critical or FindingSeverity.High))
             ? "REQUEST_CHANGES" : "COMMENT";
+
+        // ── FIX: include failed findings in the summary so nothing is silently lost ──
+        var failedSection = new StringBuilder();
+        if (failedFindings.Count > 0)
+        {
+            failedSection.AppendLine();
+            failedSection.AppendLine("### ❌ Findings that could not be posted as inline comments");
+            failedSection.AppendLine();
+            foreach (var entry in failedFindings)
+            {
+                var label = entry.Finding.Source == "SecurityAgent" ? "🔒 SEC" : "👁️ REV";
+                var status = entry.FinalStatus == "resolved" ? "✅" : "⚠️";
+                failedSection.AppendLine(
+                    $"- {status} {label} **[{entry.Finding.Severity}]** " +
+                    $"`{entry.Finding.FilePath}:{entry.Finding.Line}` — {entry.Finding.Comment}");
+                failedSection.AppendLine(
+                    $"  - Coder (Round {entry.Round}): {entry.CoderResponse}");
+            }
+        }
 
         var summary = $"""
             ## 🤖 AI Pipeline — Review Summary
@@ -691,6 +715,7 @@ public class MultiAgentWorkflow
             {(unresolvedCount == 0
                 ? "All findings resolved. Expand collapsed threads to see internal review history."
                 : "Open comments need human review. Collapsed threads show resolved internal discussions.")}
+            {failedSection}
             """;
 
         await _github.PostPRReviewAsync(prNumber, summary, summaryEvent);
@@ -704,101 +729,6 @@ public class MultiAgentWorkflow
 
     // ═══════════════════════════════════════════════════════════════
     // CORE TOOL LOOP
-    // ═══════════════════════════════════════════════════════════════
-
-    //private async Task<string> RunAgentLoop(
-    //    PipelineState state, IChatClient client, string systemPrompt,
-    //    string userMessage, string agentName, List<AITool> tools,
-    //    int maxIterations = 15)
-    //{
-    //    await Task.Delay(3000);
-    //    await SignalAgentStatus(state.PipelineId, agentName, "running");
-    //    await Log(state, agentName, "▶️ Starting...");
-
-    //    var messages = new List<ChatMessage>
-    //    {
-    //        new(ChatRole.System, systemPrompt),
-    //        new(ChatRole.User, userMessage)
-    //    };
-
-    //    var chatOptions = new ChatOptions { Tools = tools };
-    //    var finalOutput = "";
-
-    //    for (int i = 0; i < maxIterations; i++)
-    //    {
-    //        await Log(state, agentName, $"🔄 Turn {i + 1}/{maxIterations}");
-
-    //        ChatResponse response;
-    //        try
-    //        {
-    //            response = await client.GetResponseAsync(messages, chatOptions);
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            // Parse retry-after from error message if provider specifies it
-    //            var waitSeconds = 45;
-    //            var match = Regex.Match(ex.Message, @"retry in (\d+)");
-    //            if (match.Success && int.TryParse(match.Groups[1].Value, out var parsed))
-    //                waitSeconds = parsed + 5;
-
-    //            if (ex.Message.Contains("429") ||
-    //                ex.Message.Contains("TooManyRequests") ||
-    //                ex.Message.Contains("RESOURCE_EXHAUSTED") ||
-    //                ex.Message.Contains("quota") ||
-    //                ex.Message.Contains("rate_limit_exceeded"))
-    //            {
-    //                await Log(state, agentName,
-    //                    $"⚠️ Rate limited — waiting {waitSeconds}s then retrying", "warning");
-    //                await Task.Delay(TimeSpan.FromSeconds(waitSeconds));
-    //                i--; // retry same iteration
-    //                continue;
-    //            }
-
-    //            await Log(state, agentName, $"⚠️ LLM failed: {ex.Message}", "error");
-    //            break;
-    //        }
-
-    //        foreach (var msg in response.Messages) messages.Add(msg);
-
-    //        var calls = response.Messages
-    //            .SelectMany(m => m.Contents.OfType<FunctionCallContent>()).ToList();
-    //        var results = response.Messages
-    //            .SelectMany(m => m.Contents.OfType<FunctionResultContent>()).ToList();
-
-    //        foreach (var tc in calls)
-    //            await Log(state, agentName,
-    //                $"🔧 {tc.Name}({TruncateArgs(tc.Arguments)})");
-    //        foreach (var tr in results)
-    //            await Log(state, agentName,
-    //                $"✅ {Truncate(tr.Result?.ToString() ?? "", 120)}", "success");
-
-    //        if (calls.Count > 0 && results.Count > 0) continue;
-    //        if (calls.Count > 0 && results.Count == 0)
-    //        {
-    //            await Log(state, agentName,
-    //                "⚠️ Tools not executed — check .UseFunctionInvocation()", "error");
-    //            break;
-    //        }
-
-    //        finalOutput = response.Text ?? "";
-    //        if (!string.IsNullOrEmpty(finalOutput))
-    //            await _hub.Clients.All.SendAsync("AgentToken", new
-    //            {
-    //                pipelineId = state.PipelineId,
-    //                agent = agentName,
-    //                token = finalOutput
-    //            });
-
-    //        await Log(state, agentName, "✅ Complete", "success");
-    //        break;
-    //    }
-
-    //    await SignalAgentStatus(state.PipelineId, agentName, "done");
-    //    return finalOutput;
-    //}
-
-    // ═══════════════════════════════════════════════════════════════
-    // CORE TOOL LOOP — replace the entire RunAgentLoop method with this
     // ═══════════════════════════════════════════════════════════════
 
     private async Task<string> RunAgentLoop(
@@ -929,19 +859,93 @@ public class MultiAgentWorkflow
     // ═══════════════════════════════════════════════════════════════
 
     private static string BuildCoderPrompt(PipelineState state) => $"""
-    You are an expert .NET 10 Web API developer.
-    Write source files using WriteFile. Feature: {state.FeatureDescription}
-    Steps: 1. ListFiles 2. WriteFile for each file 3. Summary.
-    Complete .NET 10 code. No TODOs. Proper DI and namespaces.
-    CRITICAL: Use proper function calling, not XML tags. Never write code as text.
-    """;
-
-    private static string BuildUnitTestPrompt(PipelineState state) => $"""
-        You are an expert NUnit test engineer. Feature: {state.FeatureDescription}
-        Steps: 1. ReadSourceCode 2. WriteTestFile (min 3 NUnit tests)
-        Use [Test], [TestCase], [TestFixture]. AAA pattern. Assert.That().
-        CRITICAL: Use proper function calling, not XML tags.
+        You are an expert .NET 10 Web API developer.
+        Write source files using WriteFile. Feature: {state.FeatureDescription}
+        Steps: 1. ListFiles 2. WriteFile for each file 3. Summary.
+        Complete .NET 10 code. No TODOs. Proper DI and namespaces.
+        CRITICAL: Use proper function calling, not XML tags. Never write code as text.
         """;
+
+    //private static string BuildUnitTestPrompt(PipelineState state) => $"""
+    //    You are an expert .NET NUnit test engineer.
+    //    You have exactly TWO tools: ReadSourceCode and WriteTestFile.
+
+    //    YOUR TASK: Write NUnit test files for this feature: {state.FeatureDescription}
+
+    //    STEP 1 — Call ReadSourceCode now. No arguments needed.
+    //    STEP 2 — After reading, call WriteTestFile once per test file.
+    //    STEP 3 — After all WriteTestFile calls succeed, reply with a one-line summary ONLY.
+
+    //    WRITING RULES:
+    //    - Framework: NUnit ONLY. Never xUnit or MSTest.
+    //    - Attributes: [TestFixture], [SetUp], [Test], [TestCase]
+    //    - Minimum 3 tests per file: one happy path, one edge case, one error/exception case.
+    //    - Pattern: Arrange / Act / Assert. Use Assert.That() with NUnit constraint model only.
+    //    - Namespace must match the source file being tested.
+    //    - All test files go under a Tests/ folder, e.g. Tests/FeatureTests.cs
+
+    //    TOOL CALLING CONTRACT — read carefully:
+    //    - You MUST invoke tools through the built-in function-calling mechanism.
+    //    - A correct tool call is NEVER written as text, markdown, or XML.
+    //    - <function=anything> is WRONG and will cause a hard failure.
+    //    - JSON blocks, code blocks, or prose descriptions of a call are also WRONG.
+    //    - If you feel the urge to write a tool call as text, STOP. Call the tool instead.
+    //    - The runtime will execute the tool and return the result automatically.
+    //    - You will NOT see the result until you actually call the tool.
+
+    //    START NOW: Call ReadSourceCode.
+    //    """;
+
+    private static string BuildUnitTestPrompt(PipelineState state) =>
+    $"You are an expert .NET NUnit test engineer writing tests for: {state.FeatureDescription}" +
+    """
+
+
+    You have exactly TWO tools: ReadSourceCode and WriteTestFile.
+
+    STEP 1 — Call ReadSourceCode now. No arguments needed.
+    STEP 2 — Study the source: identify every public method, constructor parameter,
+             and dependency. Then call WriteTestFile once per test file.
+    STEP 3 — After all WriteTestFile calls succeed, reply with a one-line summary ONLY.
+
+    WRITING RULES:
+    - Framework: NUnit ONLY. Never xUnit or MSTest.
+    - Minimum 3 tests: one happy path, one edge case, one error/exception case.
+    - Pattern: Arrange / Act / Assert. Use Assert.That() with NUnit constraint model only.
+    - Namespace must match the source file being tested.
+    - All test files go under Tests/ folder, e.g. Tests/FeatureTests.cs
+
+    [SetUp] RULES — critical:
+    - ONLY include [SetUp] if the class under test has constructor dependencies.
+    - If it does, follow this exact pattern:
+
+        private MyService _sut;
+
+        [SetUp]
+        public void SetUp()
+        {
+            _sut = new MyService(); // pass real deps if needed, no Moq
+        }
+
+    - If the class has NO constructor parameters or is static: OMIT [SetUp] entirely.
+    - NEVER write an empty [SetUp]. Either fill it correctly or remove it.
+
+    CORRECT test when no [SetUp] needed (static/pure logic):
+
+        [Test]
+        public void Calculate_WithValidInput_ReturnsCorrectResult()
+        {
+            var result = FibonacciCalculator.Calculate(5);
+            Assert.That(result, Is.EqualTo(5));
+        }
+
+    TOOL CALLING CONTRACT:
+    - You MUST invoke tools through the built-in function-calling mechanism.
+    - Writing tool calls as text, XML, or markdown is WRONG and will cause a hard failure.
+    - The runtime executes the tool and returns the result — you will not see it until you call.
+
+    START NOW: Call ReadSourceCode.
+    """;
 
     private static string BuildPlaywrightPrompt(PipelineState state) => $"""
         You are a Playwright E2E test engineer. Feature: {state.FeatureDescription}
@@ -992,47 +996,21 @@ public class MultiAgentWorkflow
     // AI CLIENT FACTORIES
     // ═══════════════════════════════════════════════════════════════
 
-    //private IChatClient CreateGroqClient()
-    //{
-    //    // Rotate across models with separate daily token quotas (500k TPD each)
-    //    var models = new[]
-    //    {
-    //        "llama-3.1-8b-instant",
-    //        "gemma2-9b-it",
-    //        "mixtral-8x7b-32768",
-    //    };
-    //    var model = models[DateTime.UtcNow.Minute % models.Length];
-    //    return new ChatClientBuilder(
-    //            new GroqChatClient(
-    //                _config["Groq:ApiKey"] ?? throw new Exception("Missing Groq:ApiKey"),
-    //                model))
-    //        .UseFunctionInvocation().Build();
-    //}
-
-    private readonly GeminiThrottler _geminiThrottler = new();
-
     private IChatClient CreateGroqClient()
-    => new ChatClientBuilder(
-            new GroqChatClient(
-                _config["Groq:ApiKey"] ?? throw new Exception("Missing Groq:ApiKey"),
-                "llama-3.3-70b-versatile"))
-        .UseFunctionInvocation().Build();
-
-    //private IChatClient CreateGeminiClient()
-    //    => new ChatClientBuilder(
-    //            new GeminiChatClient(
-    //                _config["Gemini:ApiKey"] ?? throw new Exception("Missing Gemini:ApiKey"),
-    //                model: "gemini-2.5-flash-lite")) // 15 RPM, 1500 RPD free
-    //        .UseFunctionInvocation().Build();
+        => new ChatClientBuilder(
+                new GroqChatClient(
+                    _config["Groq:ApiKey"] ?? throw new Exception("Missing Groq:ApiKey"),
+                    "llama-3.3-70b-versatile"))
+            .UseFunctionInvocation().Build();
 
     private IChatClient CreateGeminiClient()
-    => new ChatClientBuilder(
-            new ThrottledChatClient(  // wrap with throttler
-                new GeminiChatClient(
-                    _config["Gemini:ApiKey"] ?? throw new Exception("Missing Gemini:ApiKey"),
-                    model: "gemini-2.0-flash"),
-                _geminiThrottler))
-        .UseFunctionInvocation().Build();
+        => new ChatClientBuilder(
+                new ThrottledChatClient(
+                    new GeminiChatClient(
+                        _config["Gemini:ApiKey"] ?? throw new Exception("Missing Gemini:ApiKey"),
+                        model: "gemini-2.0-flash"),
+                    _geminiThrottler))
+            .UseFunctionInvocation().Build();
 
     private IChatClient CreateGitHubModelsClient()
         => new ChatClientBuilder(

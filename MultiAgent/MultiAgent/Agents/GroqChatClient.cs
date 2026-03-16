@@ -8,7 +8,6 @@ namespace MultiAgent.Agents;
 /// <summary>
 /// Groq IChatClient adapter — FREE tier.
 /// Model: llama-3.3-70b-versatile (best free tool-calling model)
-/// Free: 500k tokens/day · 6k tokens/min
 /// Key: console.groq.com
 /// </summary>
 public class GroqChatClient : IChatClient
