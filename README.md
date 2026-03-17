@@ -362,7 +362,7 @@ This project uses **GitHub Classic Personal Access Tokens** (not fine-grained to
 
 ### What You Must Change for Your Own Environment
 
-If you fork or clone this repo, update **all** of the following before running:
+If you clone this repo, ensure **all** of the following are configured before running:
 
 - [ ] `Gemini:ApiKey` → Your own key from [Google AI Studio](https://aistudio.google.com/app/apikey)
 - [ ] `Groq:ApiKey` → Your own key from [Groq Console](https://console.groq.com/keys)
