@@ -591,6 +591,11 @@ public class MultiAgentWorkflow
     private async Task PostAllFindingsToPR(PipelineState state)
     {
         if (state.PullRequestNumber == null || state.CommitSha == null) return;
+        if (state.InternalReviewLog.Count == 0)
+        {
+            await Log(state, "Orchestrator", "✅ No findings — skipping PR comment.", "success");
+            return;
+        }
 
         var prNumber = state.PullRequestNumber.Value;
         var commitSha = state.CommitSha;
