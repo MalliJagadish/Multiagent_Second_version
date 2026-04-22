@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.AI;
+using Microsoft.Extensions.AI;
 using MultiAgent.Agents;
 using MultiAgent.Models;
 using MultiAgent.Services;
@@ -12,17 +12,22 @@ using System.Text.RegularExpressions;
 namespace MultiAgent.Workflows;
 
 /// <summary>
-/// MultiAgent Workflow — internal review loop + resolved/unresolved PR comments.
+/// MultiAgent Workflow — GitHub Models, two vendors (OpenAI + Mistral).
+///
+/// AGENTS AND MODELS:
+///   CoderAgent      → GitHub Models: openai/gpt-4.1-mini          (OpenAI — code generation)
+///   UnitTestAgent   → GitHub Models: openai/gpt-4.1-mini          (OpenAI — test generation)
+///   PlaywrightAgent → GitHub Models: mistral-ai/mistral-small-2503  (Mistral — E2E test generation)
+///   ReviewAgent     → GitHub Models: mistral-ai/mistral-small-2503  (Mistral — code review)
+///   SecurityAgent   → GitHub Models: mistral-ai/mistral-small-2503  (Mistral — security analysis)
 ///
 /// FLOW:
-///   Phase 1: Coder generates code
-///   Phase 2: Internal Review + Security (parallel, no PR yet)
-///   Phase 3: Coder fixes or defends ALL findings (review + security together)
-///   Phase 4: Re-review (review agent + security agent in parallel)
-///   Phase 5: Unit tests + Playwright (parallel, after review loop)
-///   Phase 6: Commit → Create PR → Post ALL comments inline
-///            → Resolve accepted threads (collapsed)
-///            → Leave unresolved threads open (visible)
+///   Phase 1: Coder generates code             (OpenAI gpt-4.1-mini)
+///   Phase 2: Review + Security in parallel    (Mistral Small 3.1 × 2)
+///   Phase 3: Coder fixes or defends findings  (OpenAI gpt-4.1-mini)
+///   Phase 4: Re-review in parallel            (Mistral Small 3.1 × 2)
+///   Phase 5: Unit tests + Playwright parallel (gpt-4.1-mini + Mistral Small 3.1)
+///   Phase 6: Commit → Create PR → Post all inline comments
 /// </summary>
 public class MultiAgentWorkflow
 {
@@ -33,7 +38,6 @@ public class MultiAgentWorkflow
     private readonly ILogger<MultiAgentWorkflow> _logger;
 
     private const int MaxReviewRounds = 2;
-    private static readonly GeminiThrottler _geminiThrottler = new();
 
     public MultiAgentWorkflow(
         IConfiguration config, GitHubService github,
@@ -69,13 +73,14 @@ public class MultiAgentWorkflow
         });
 
         await Log(state, "Orchestrator", $"🚀 Pipeline started: {request.FeatureDescription}");
+        await Log(state, "Orchestrator", "🤖 Multi-vendor GitHub Models: OpenAI gpt-4.1-mini (Coder) + Mistral Small 3.1 (Reviewer)");
 
         try
         {
             await CreateBranch(state);
 
             // ── PHASE 1: Generate code ─────────────────────────────
-            await Log(state, "Orchestrator", "▶️ Phase 1: Coder generates code");
+            await Log(state, "Orchestrator", "▶️ Phase 1: CoderAgent [gpt-4.1-mini] generates code");
             await RunCoderAgent(state);
             VerifyFilesCreated(state);
 
@@ -86,12 +91,11 @@ public class MultiAgentWorkflow
             {
                 await Log(state, "Orchestrator", $"🔄 Review round {round}/{MaxReviewRounds}");
 
-                // Phase 2: Review + Security in parallel
+                // Phase 2: Review + Security in parallel (both Mistral Small 3.1)
                 var reviewTask = RunInternalReviewAgent(state);
                 var securityTask = RunInternalSecurityAgent(state);
                 await Task.WhenAll(reviewTask, securityTask);
 
-                // CoderFixAgent gets ALL findings (review + security) together
                 var allFindings = reviewTask.Result.Concat(securityTask.Result).ToList();
                 var criticalCount = allFindings.Count(f =>
                     f.Severity is FindingSeverity.Critical or FindingSeverity.High);
@@ -106,12 +110,12 @@ public class MultiAgentWorkflow
                     break;
                 }
 
-                // Phase 3: Coder fixes or defends ALL findings in one pass
-                await Log(state, "Orchestrator", "▶️ Coder addressing all findings...");
+                // Phase 3: Coder fixes or defends ALL findings (gpt-4.1-mini)
+                await Log(state, "Orchestrator", "▶️ CoderAgent [gpt-4.1-mini] addressing all findings...");
                 var coderResponses = await RunCoderFixAgent(state, allFindings);
 
-                // Phase 4: Re-review (split by original agent, parallel)
-                await Log(state, "Orchestrator", "▶️ Re-evaluating responses (review + security parallel)...");
+                // Phase 4: Re-review (both Mistral Small 3.1 in parallel)
+                await Log(state, "Orchestrator", "▶️ Re-evaluating responses [Mistral Small 3.1 × 2 parallel]...");
 
                 var reviewFindings = allFindings.Where(f => f.Source == "ReviewAgent").ToList();
                 var securityFindings = allFindings.Where(f => f.Source == "SecurityAgent").ToList();
@@ -127,7 +131,6 @@ public class MultiAgentWorkflow
                 await Task.WhenAll(reReviewTask, secReReviewTask);
                 var reReviewResults = reReviewTask.Result.Concat(secReReviewTask.Result).ToList();
 
-                // Record everything in the audit log
                 foreach (var f in allFindings)
                 {
                     var cr = coderResponses.FirstOrDefault(r => r.FindingId == f.Id);
@@ -159,7 +162,7 @@ public class MultiAgentWorkflow
 
             // ── PHASE 5: Tests on FINAL stable code (parallel) ────
             await Log(state, "Orchestrator",
-                "▶️ Phase 5: Tests on final code (NUnit + Playwright in parallel)");
+                "▶️ Phase 5: Tests [OpenAI gpt-4.1-mini + Mistral Small 3.1 parallel]");
 
             await Task.WhenAll(
                 RunUnitTestAgent(state),
@@ -183,7 +186,7 @@ public class MultiAgentWorkflow
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // PHASE 1: CODER
+    // PHASE 1: CODER — openai/gpt-4.1-mini
     // ═══════════════════════════════════════════════════════════════
 
     private async Task RunCoderAgent(PipelineState state)
@@ -200,13 +203,13 @@ public class MultiAgentWorkflow
                 "ListFiles", "List staged files.")
         };
 
-        state.GeneratedCode = await RunAgentLoop(state, CreateGroqClient(),
+        state.GeneratedCode = await RunAgentLoop(state, CreateCoderClient(),
             BuildCoderPrompt(state),
             $"Implement: {state.FeatureDescription}", "CoderAgent", tools, 15);
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // PHASE 5: TESTS (run after review loop completes)
+    // PHASE 5: TESTS (after review loop)
     // ═══════════════════════════════════════════════════════════════
 
     private async Task RunUnitTestAgent(PipelineState state)
@@ -223,7 +226,7 @@ public class MultiAgentWorkflow
                 "WriteTestFile", "Write a test file."),
         };
 
-        state.UnitTestResults = await RunAgentLoop(state, CreateGroqClient(),
+        state.UnitTestResults = await RunAgentLoop(state, CreateCoderClient(),
             BuildUnitTestPrompt(state),
             $"Write NUnit tests for: {state.FeatureDescription}", "UnitTestAgent", tools, 12);
     }
@@ -242,13 +245,13 @@ public class MultiAgentWorkflow
                 "WriteE2ETest", "Write a Playwright test."),
         };
 
-        state.PlaywrightResults = await RunAgentLoop(state, CreateGeminiClient(),
+        state.PlaywrightResults = await RunAgentLoop(state, CreateReviewClient(),
             BuildPlaywrightPrompt(state),
             $"Write E2E tests for: {state.FeatureDescription}", "PlaywrightAgent", tools, 10);
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // PHASE 2: INTERNAL REVIEW + SECURITY (parallel)
+    // PHASE 2: INTERNAL REVIEW + SECURITY (parallel) — Mistral Small 3.1-Instruct
     // ═══════════════════════════════════════════════════════════════
 
     private async Task<List<ReviewFinding>> RunInternalReviewAgent(PipelineState state)
@@ -280,7 +283,7 @@ public class MultiAgentWorkflow
                 "ReportFinding", "Report a review finding with severity."),
         };
 
-        await RunAgentLoop(state, CreateGitHubModelsClient(),
+        await RunAgentLoop(state, CreateReviewClient(),
             BuildInternalReviewPrompt(state),
             $"Internal review for: {state.FeatureDescription}",
             "ReviewAgent", tools, 10);
@@ -320,7 +323,7 @@ public class MultiAgentWorkflow
                 "ReportVulnerability", "Report a security vulnerability."),
         };
 
-        await RunAgentLoop(state, CreateGeminiClient(),
+        await RunAgentLoop(state, CreateReviewClient(),
             BuildInternalSecurityPrompt(state),
             $"Security scan for: {state.FeatureDescription}",
             "SecurityAgent", tools, 10);
@@ -328,7 +331,7 @@ public class MultiAgentWorkflow
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // PHASE 3: CODER FIXES OR DEFENDS (all findings in one pass)
+    // PHASE 3: CODER FIXES OR DEFENDS — gpt-4.1-mini
     // ═══════════════════════════════════════════════════════════════
 
     private async Task<List<CoderResponse>> RunCoderFixAgent(
@@ -395,10 +398,9 @@ public class MultiAgentWorkflow
             Do NOT output function calls as XML tags.
             """;
 
-        await RunAgentLoop(state, CreateGroqClient(), prompt,
+        await RunAgentLoop(state, CreateCoderClient(), prompt,
             "Address all findings.", "CoderAgent", tools, 20);
 
-        // Default unresponded findings
         foreach (var f in findings.Where(f => !responses.Any(r => r.FindingId == f.Id)))
             responses.Add(new CoderResponse
             {
@@ -414,7 +416,7 @@ public class MultiAgentWorkflow
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // PHASE 4: RE-REVIEW (parallel by original agent)
+    // PHASE 4: RE-REVIEW (parallel) — Mistral Small 3.1-Instruct
     // ═══════════════════════════════════════════════════════════════
 
     private async Task<List<ReReviewResult>> RunReReviewAgent(
@@ -476,7 +478,7 @@ public class MultiAgentWorkflow
             Do NOT output function calls as XML tags.
             """;
 
-        await RunAgentLoop(state, CreateGitHubModelsClient(), prompt,
+        await RunAgentLoop(state, CreateReviewClient(), prompt,
             "Evaluate all coder responses.", "ReviewAgent", tools, 10);
 
         foreach (var f in findings.Where(f => !results.Any(r => r.FindingId == f.Id)))
@@ -538,27 +540,26 @@ public class MultiAgentWorkflow
 
         var prompt = $"""
             You are a cybersecurity expert re-evaluating whether security vulnerabilities were properly fixed.
-            You originally found these issues. Now verify the coder's fixes.
 
             SECURITY FINDINGS AND CODER RESPONSES:
             {context}
 
             Call EvaluateResponse for EVERY finding:
-            - accepted=true: the vulnerability is actually fixed, OR the defense proves it's a false positive
-            - accepted=false: the fix doesn't resolve the vulnerability, OR the defense is weak
+            - accepted=true: vulnerability is fixed, OR defense proves it's a false positive
+            - accepted=false: fix doesn't resolve the vulnerability, OR defense is weak
 
             STEPS:
             1. Call ReadUpdatedCode to see the current code.
-            2. For each finding, verify the fix eliminates the attack vector.
+            2. Verify each fix eliminates the attack vector.
             3. Call EvaluateResponse for EVERY finding.
 
-            Be strict on CRITICAL/HIGH — the fix must eliminate the actual attack vector.
+            Be strict on CRITICAL/HIGH.
 
             CRITICAL: Use tool functions via proper function calling.
             Do NOT output function calls as XML tags.
             """;
 
-        await RunAgentLoop(state, CreateGeminiClient(), prompt,
+        await RunAgentLoop(state, CreateReviewClient(), prompt,
             "Re-evaluate security fixes.", "SecurityAgent", tools, 10);
 
         foreach (var f in findings.Where(f => !results.Any(r => r.FindingId == f.Id)))
@@ -580,7 +581,7 @@ public class MultiAgentWorkflow
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // PHASE 6: POST ALL FINDINGS TO PR + RESOLVE ACCEPTED THREADS
+    // PHASE 6: POST ALL FINDINGS TO PR
     // ═══════════════════════════════════════════════════════════════
 
     private async Task PostAllFindingsToPR(PipelineState state)
@@ -592,8 +593,6 @@ public class MultiAgentWorkflow
         var resolvedCount = 0;
         var unresolvedCount = 0;
         var failedCount = 0;
-
-        // ── FIX: track failed findings so they appear in the PR summary ──
         var failedFindings = new List<ReviewLogEntry>();
 
         foreach (var entry in state.InternalReviewLog)
@@ -684,7 +683,6 @@ public class MultiAgentWorkflow
                 (e.Finding.Severity is FindingSeverity.Critical or FindingSeverity.High))
             ? "REQUEST_CHANGES" : "COMMENT";
 
-        // ── FIX: include failed findings in the summary so nothing is silently lost ──
         var failedSection = new StringBuilder();
         if (failedFindings.Count > 0)
         {
@@ -704,7 +702,13 @@ public class MultiAgentWorkflow
         }
 
         var summary = $"""
-            ## 🤖 AI Pipeline — Review Summary
+            ## 🤖 AI Pipeline — Review Summary (GitHub Models)
+
+            | Agent | Model |
+            |---|---|
+            | CoderAgent | `openai/gpt-4.1-mini` (OpenAI) |
+            | ReviewAgent | `mistral-ai/mistral-small-2503` (Mistral) |
+            | SecurityAgent | `mistral-ai/mistral-small-2503` (Mistral) |
 
             | Status | Count |
             |---|---|
@@ -757,7 +761,7 @@ public class MultiAgentWorkflow
             try
             {
                 response = await client.GetResponseAsync(messages, chatOptions);
-                rateLimitRetries = 0; // reset on success
+                rateLimitRetries = 0;
             }
             catch (Exception ex)
             {
@@ -769,7 +773,6 @@ public class MultiAgentWorkflow
 
                 if (isRateLimit)
                 {
-                    // Check if daily quota is fully exhausted (limit: 0 means nothing left)
                     if (ex.Message.Contains("limit: 0"))
                     {
                         await Log(state, agentName,
@@ -777,12 +780,9 @@ public class MultiAgentWorkflow
                         break;
                     }
 
-                    // Per-minute throttle — retry up to 3 times
                     if (rateLimitRetries < 3)
                     {
                         rateLimitRetries++;
-
-                        // Parse retry delay from error if provider specifies it
                         var waitSeconds = 45;
                         var retryMatch = Regex.Match(ex.Message, @"retry in (\d+)");
                         if (retryMatch.Success && int.TryParse(retryMatch.Groups[1].Value, out var parsed))
@@ -791,32 +791,27 @@ public class MultiAgentWorkflow
                         await Log(state, agentName,
                             $"⚠️ Rate limited — retry {rateLimitRetries}/3 in {waitSeconds}s", "warning");
                         await Task.Delay(TimeSpan.FromSeconds(waitSeconds));
-                        i--; // retry same iteration
+                        i--;
                         continue;
                     }
 
-                    // Exhausted all retries
                     await Log(state, agentName,
                         "❌ Rate limit retries exhausted — skipping agent", "error");
                     break;
                 }
 
-                // Non-rate-limit error
                 await Log(state, agentName, $"⚠️ LLM failed: {ex.Message}", "error");
                 break;
             }
 
-            // Add response messages to history
             foreach (var msg in response.Messages)
                 messages.Add(msg);
 
-            // Check what came back
             var calls = response.Messages
                 .SelectMany(m => m.Contents.OfType<FunctionCallContent>()).ToList();
             var results = response.Messages
                 .SelectMany(m => m.Contents.OfType<FunctionResultContent>()).ToList();
 
-            // Log tool activity
             foreach (var tc in calls)
                 await Log(state, agentName,
                     $"🔧 {tc.Name}({TruncateArgs(tc.Arguments)})");
@@ -824,11 +819,9 @@ public class MultiAgentWorkflow
                 await Log(state, agentName,
                     $"✅ {Truncate(tr.Result?.ToString() ?? "", 120)}", "success");
 
-            // Tool calls executed — continue loop for next LLM turn
             if (calls.Count > 0 && results.Count > 0)
                 continue;
 
-            // Tool calls returned but NOT executed — middleware issue
             if (calls.Count > 0 && results.Count == 0)
             {
                 await Log(state, agentName,
@@ -836,7 +829,6 @@ public class MultiAgentWorkflow
                 break;
             }
 
-            // No tool calls — agent is done, capture text output
             finalOutput = response.Text ?? "";
             if (!string.IsNullOrEmpty(finalOutput))
                 await _hub.Clients.All.SendAsync("AgentToken", new
@@ -866,36 +858,6 @@ public class MultiAgentWorkflow
         CRITICAL: Use proper function calling, not XML tags. Never write code as text.
         """;
 
-    //private static string BuildUnitTestPrompt(PipelineState state) => $"""
-    //    You are an expert .NET NUnit test engineer.
-    //    You have exactly TWO tools: ReadSourceCode and WriteTestFile.
-
-    //    YOUR TASK: Write NUnit test files for this feature: {state.FeatureDescription}
-
-    //    STEP 1 — Call ReadSourceCode now. No arguments needed.
-    //    STEP 2 — After reading, call WriteTestFile once per test file.
-    //    STEP 3 — After all WriteTestFile calls succeed, reply with a one-line summary ONLY.
-
-    //    WRITING RULES:
-    //    - Framework: NUnit ONLY. Never xUnit or MSTest.
-    //    - Attributes: [TestFixture], [SetUp], [Test], [TestCase]
-    //    - Minimum 3 tests per file: one happy path, one edge case, one error/exception case.
-    //    - Pattern: Arrange / Act / Assert. Use Assert.That() with NUnit constraint model only.
-    //    - Namespace must match the source file being tested.
-    //    - All test files go under a Tests/ folder, e.g. Tests/FeatureTests.cs
-
-    //    TOOL CALLING CONTRACT — read carefully:
-    //    - You MUST invoke tools through the built-in function-calling mechanism.
-    //    - A correct tool call is NEVER written as text, markdown, or XML.
-    //    - <function=anything> is WRONG and will cause a hard failure.
-    //    - JSON blocks, code blocks, or prose descriptions of a call are also WRONG.
-    //    - If you feel the urge to write a tool call as text, STOP. Call the tool instead.
-    //    - The runtime will execute the tool and return the result automatically.
-    //    - You will NOT see the result until you actually call the tool.
-
-    //    START NOW: Call ReadSourceCode.
-    //    """;
-
     private static string BuildUnitTestPrompt(PipelineState state) =>
     $"You are an expert .NET NUnit test engineer writing tests for: {state.FeatureDescription}" +
     """
@@ -915,34 +877,13 @@ public class MultiAgentWorkflow
     - Namespace must match the source file being tested.
     - All test files go under Tests/ folder, e.g. Tests/FeatureTests.cs
 
-    [SetUp] RULES — critical:
+    [SetUp] RULES:
     - ONLY include [SetUp] if the class under test has constructor dependencies.
-    - If it does, follow this exact pattern:
-
-        private MyService _sut;
-
-        [SetUp]
-        public void SetUp()
-        {
-            _sut = new MyService(); // pass real deps if needed, no Moq
-        }
-
-    - If the class has NO constructor parameters or is static: OMIT [SetUp] entirely.
-    - NEVER write an empty [SetUp]. Either fill it correctly or remove it.
-
-    CORRECT test when no [SetUp] needed (static/pure logic):
-
-        [Test]
-        public void Calculate_WithValidInput_ReturnsCorrectResult()
-        {
-            var result = FibonacciCalculator.Calculate(5);
-            Assert.That(result, Is.EqualTo(5));
-        }
+    - NEVER write an empty [SetUp].
 
     TOOL CALLING CONTRACT:
     - You MUST invoke tools through the built-in function-calling mechanism.
-    - Writing tool calls as text, XML, or markdown is WRONG and will cause a hard failure.
-    - The runtime executes the tool and returns the result — you will not see it until you call.
+    - Writing tool calls as text, XML, or markdown is WRONG.
 
     START NOW: Call ReadSourceCode.
     """;
@@ -993,30 +934,23 @@ public class MultiAgentWorkflow
         """;
 
     // ═══════════════════════════════════════════════════════════════
-    // AI CLIENT FACTORIES
+    // AI CLIENT FACTORIES — both use GitHub Models via one GitHub PAT
     // ═══════════════════════════════════════════════════════════════
 
-    private IChatClient CreateGroqClient()
-        => new ChatClientBuilder(
-                new GroqChatClient(
-                    _config["Groq:ApiKey"] ?? throw new Exception("Missing Groq:ApiKey"),
-                    "llama-3.3-70b-versatile"))
-            .UseFunctionInvocation().Build();
-
-    private IChatClient CreateGeminiClient()
-        => new ChatClientBuilder(
-                new ThrottledChatClient(
-                    new GeminiChatClient(
-                        _config["Gemini:ApiKey"] ?? throw new Exception("Missing Gemini:ApiKey"),
-                        model: "gemini-2.0-flash"),
-                    _geminiThrottler))
-            .UseFunctionInvocation().Build();
-
-    private IChatClient CreateGitHubModelsClient()
+    /// <summary>Code-generation agent — openai/gpt-4.1-mini (stronger reasoning, writes code)</summary>
+    private IChatClient CreateCoderClient()
         => new ChatClientBuilder(
                 new GitHubModelsChatClient(
                     _config["GitHub:Token"] ?? throw new Exception("Missing GitHub:Token"),
-                    model: "openai/gpt-4.1-nano"))
+                    model: "openai/gpt-4.1-mini"))
+            .UseFunctionInvocation().Build();
+
+    /// <summary>Review / analysis agent — mistral-ai/mistral-small-2503 (Mistral, different vendor = unbiased review)</summary>
+    private IChatClient CreateReviewClient()
+        => new ChatClientBuilder(
+                new GitHubModelsChatClient(
+                    _config["GitHub:Token"] ?? throw new Exception("Missing GitHub:Token"),
+                    model: "mistral-ai/mistral-small-2503"))
             .UseFunctionInvocation().Build();
 
     // ═══════════════════════════════════════════════════════════════
@@ -1043,7 +977,7 @@ public class MultiAgentWorkflow
         try
         {
             await _github.CommitFromMemoryAsync(state.Files, state.BranchName,
-                $"feat: {state.FeatureDescription}\n\nGenerated by MultiAgent");
+                $"feat: {state.FeatureDescription}\n\nGenerated by MultiAgent (GitHub Models)");
 
             state.CommitSha = await _github.GetLatestCommitShaAsync(state.BranchName);
 

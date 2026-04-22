@@ -4,8 +4,9 @@
     <!-- Header -->
     <header>
       <div class="logo">⚡ DevPipeline</div>
-      <div class="tagline">AI Dev Pipeline · In-Memory → GitHub</div>
+      <div class="tagline">AI Dev Pipeline · GitHub Models · In-Memory → GitHub</div>
       <div class="badges">
+        <span class="badge model-badge">OpenAI + Mistral via GitHub Models</span>
         <span class="badge" :class="connected ? 'live' : 'offline'">
           {{ connected ? '● Live' : '○ Offline' }}
         </span>
@@ -139,11 +140,12 @@
         <div class="step">
           <div class="step-num">1</div>
           <div class="step-body">
-            <strong>Get API Keys</strong>
-            <ul>
-              <li>Groq: <a href="https://console.groq.com" target="_blank">console.groq.com</a> → API Keys → FREE</li>
-              <li>Gemini: <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a> → Get API Key → FREE</li>
-            </ul>
+            <strong>GitHub Personal Access Token (Classic)</strong><br/>
+            <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a>
+            → Tokens (classic) → Generate new token → check <code>repo</code> scope
+            <br/><br/>
+            This same token authenticates <strong>both GitHub Models AND the GitHub API</strong> —
+            no extra keys needed!
           </div>
         </div>
 
@@ -151,32 +153,28 @@
           <div class="step-num">2</div>
           <div class="step-body">
             <strong>Fill in appsettings.json</strong>
-            <pre>Groq:ApiKey
-Gemini:ApiKey
-GitHub:Token, GitHub:RepoOwner, GitHub:RepoName</pre>
+            <pre>{
+  "GitHub": {
+    "Token":      "ghp_...",
+    "RepoOwner":  "your-username",
+    "RepoName":   "your-target-repo"
+  }
+}</pre>
+            <em>Gemini and Groq keys are no longer needed.</em>
           </div>
         </div>
 
         <div class="step">
           <div class="step-num">3</div>
           <div class="step-body">
-            <strong>GitHub Personal Access Token (Classic)</strong><br/>
-            <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a>
-            → Tokens (classic) → Generate → check <code>repo</code> scope
+            <strong>Create a target GitHub repo</strong><br/>
+            This is where the pipeline commits AI-generated code and opens Draft PRs.
+            <br/><em>No local clone needed — everything is in-memory!</em>
           </div>
         </div>
 
         <div class="step">
           <div class="step-num">4</div>
-          <div class="step-body">
-            <strong>Create an empty GitHub repo</strong><br/>
-            This is where the pipeline commits code and opens the Draft PR.
-            <br/><em>No local clone needed — everything happens in-memory!</em>
-          </div>
-        </div>
-
-        <div class="step">
-          <div class="step-num">5</div>
           <div class="step-body">
             <strong>Run the API</strong>
             <pre>dotnet run   ← starts on https://localhost:7247</pre>
@@ -184,22 +182,60 @@ GitHub:Token, GitHub:RepoOwner, GitHub:RepoName</pre>
         </div>
 
         <div class="step" style="border:none">
-          <div class="step-num">6</div>
+          <div class="step-num">5</div>
           <div class="step-body">
             <strong>Run this dashboard</strong>
-            <pre>cd pipeline-ui
+            <pre>cd "MultiAgent Frontend"
 npm install
 npm run dev   ← opens http://localhost:5173</pre>
           </div>
         </div>
 
-        <div class="cost-box">
-          <h4>Estimated cost per full pipeline run</h4>
+        <div class="model-box">
+          <h4>GitHub Models used in this demo</h4>
           <table class="cost-table">
-            <tr><td>⚡ Groq Llama 3.3 (Coder, UnitTest)</td><td>$0.00 FREE</td></tr>
-            <tr><td>✨ Gemini 2.0 Flash (Playwright, Review, Security)</td><td>$0.00 FREE</td></tr>
-            <tr class="total"><td><strong>Total per pipeline run</strong></td><td><strong>$0.00 FREE</strong></td></tr>
+            <tr>
+              <td><strong>Agent</strong></td>
+              <td><strong>Model</strong></td>
+              <td><strong>Role</strong></td>
+            </tr>
+            <tr>
+              <td>🧑‍💻 CoderAgent</td>
+              <td><code>openai/gpt-4.1-mini</code></td>
+              <td>Writes code &amp; tests</td>
+            </tr>
+            <tr>
+              <td>🧪 UnitTestAgent</td>
+              <td><code>openai/gpt-4.1-mini</code></td>
+              <td>NUnit test generation</td>
+            </tr>
+            <tr>
+              <td>🎭 PlaywrightAgent</td>
+              <td><code>mistral-ai/mistral-small-2503</code></td>
+              <td>E2E test generation</td>
+            </tr>
+            <tr>
+              <td>👁️ ReviewAgent</td>
+              <td><code>mistral-ai/mistral-small-2503</code></td>
+              <td>Code review &amp; re-review</td>
+            </tr>
+            <tr>
+              <td>🔒 SecurityAgent</td>
+              <td><code>mistral-ai/mistral-small-2503</code></td>
+              <td>Security scanning</td>
+            </tr>
+            <tr class="total">
+              <td colspan="2"><strong>Total cost per pipeline run</strong></td>
+              <td><strong>$0.00 — FREE via GitHub Models</strong></td>
+            </tr>
           </table>
+        </div>
+
+        <div class="info-banner" style="margin-top:16px">
+          <strong>💡 How the multi-vendor flow works:</strong>
+          <code>OpenAI gpt-4.1-mini</code> <em>generates</em> the code while
+          <code>Mistral Small 3.1</code> <em>reviews</em> it —
+          two independent models from different vendors collaborating via tool calls, all using a single GitHub PAT.
         </div>
       </div>
     </div>
@@ -254,15 +290,14 @@ const finalReport        = ref<FinalReport | null>(null)
 const logsEl             = ref<HTMLElement | null>(null)
 
 const agents = ref<AgentState[]>([
-  { name: 'CoderAgent',      label: 'Coder',      icon: '🧑‍💻', model: 'Groq Llama 3.3',   status: 'waiting' },
-  { name: 'UnitTestAgent',   label: 'Unit Tests', icon: '🧪', model: 'Groq Llama 3.3',   status: 'waiting' },
-  { name: 'PlaywrightAgent', label: 'Playwright', icon: '🎭', model: 'Gemini 2.0 Flash', status: 'waiting' },
-  { name: 'ReviewAgent', label: 'Review', icon: '👁️', model: 'GitHub GPT-4.1', status: 'waiting' },
-  { name: 'SecurityAgent',   label: 'Security',   icon: '🔒', model: 'Gemini 2.0 Flash', status: 'waiting' },
+  { name: 'CoderAgent',      label: 'Coder',      icon: '🧑‍💻', model: 'OpenAI gpt-4.1-mini',   status: 'waiting' },
+  { name: 'UnitTestAgent',   label: 'Unit Tests', icon: '🧪', model: 'OpenAI gpt-4.1-mini',   status: 'waiting' },
+  { name: 'PlaywrightAgent', label: 'Playwright', icon: '🎭', model: 'Mistral Small 3.1',     status: 'waiting' },
+  { name: 'ReviewAgent',     label: 'Review',     icon: '👁️', model: 'Mistral Small 3.1',     status: 'waiting' },
+  { name: 'SecurityAgent',   label: 'Security',   icon: '🔒', model: 'Mistral Small 3.1',     status: 'waiting' },
 ])
 
 // ── SignalR ───────────────────────────────────────────────────
-// IMPORTANT: Use HTTP (not HTTPS) to avoid self-signed cert issues
 const API_BASE = 'https://localhost:7247'
 
 let hubConnection: signalR.HubConnection | null = null
@@ -333,7 +368,7 @@ async function startConnection(): Promise<void> {
 onMounted(async () => { await startConnection() })
 onUnmounted(async () => { if (hubConnection) await hubConnection.stop() })
 
-// ── Run pipeline (no local path needed) ───────────────────────
+// ── Run pipeline ──────────────────────────────────────────────
 async function runPipeline(): Promise<void> {
   running.value      = true
   hasStarted.value   = true
@@ -357,7 +392,7 @@ async function runPipeline(): Promise<void> {
       running.value = false
     }
   } catch {
-    addLog('System', '❌ Cannot reach API — is dotnet running on port 5000?', 'error')
+    addLog('System', '❌ Cannot reach API — is dotnet running on port 7247?', 'error')
     running.value = false
   }
 }
@@ -410,13 +445,14 @@ function duration(start?: string, end?: string): string {
   margin: 0 auto;
 }
 
-header { display:flex; align-items:center; gap:12px; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #1e2535; }
+header { display:flex; align-items:center; gap:12px; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #1e2535; flex-wrap:wrap; }
 .logo    { font-size:20px; font-weight:700; color:#60a5fa; }
 .tagline { color:#475569; font-size:13px; flex:1; }
-.badges  { display:flex; gap:8px; }
+.badges  { display:flex; gap:8px; flex-wrap:wrap; }
 .badge   { font-size:11px; font-family:'JetBrains Mono',monospace; padding:3px 10px; border-radius:20px; }
-.live    { color:#4ade80; background:#052e16; }
-.offline { color:#94a3b8; background:#1e2535; }
+.live       { color:#4ade80; background:#052e16; }
+.offline    { color:#94a3b8; background:#1e2535; }
+.model-badge { color:#a78bfa; background:#1e1040; border:1px solid #4c1d95; }
 
 .tabs { display:flex; gap:4px; margin-bottom:16px; }
 .tabs button { background:#131720; border:1px solid #1e2535; color:#64748b; padding:8px 18px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:500; transition:all .2s; }
@@ -431,9 +467,6 @@ textarea, input { background:#0d0f14; border:1px solid #1e2535; border-radius:8p
 textarea { resize:vertical; }
 textarea:focus, input:focus { outline:none; border-color:#3b82f6; }
 .row   { display:flex; gap:12px; align-items:flex-end; margin-top:14px; flex-wrap:wrap; }
-.flex1 { flex:1; min-width:200px; }
-
-.mode-badge { margin-top:12px; font-size:12px; color:#4ade80; background:#052e16; border:1px solid #166534; border-radius:6px; padding:8px 12px; }
 
 .btn-primary { background:#2563eb; color:#fff; border:none; border-radius:8px; padding:10px 24px; font-size:14px; font-weight:600; cursor:pointer; white-space:nowrap; transition:background .2s; }
 .btn-primary:hover:not(:disabled) { background:#1d4ed8; }
@@ -441,7 +474,7 @@ textarea:focus, input:focus { outline:none; border-color:#3b82f6; }
 .btn-ghost { background:none; border:1px solid #1e2535; color:#64748b; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:12px; }
 .btn-ghost:hover { border-color:#334155; color:#94a3b8; }
 
-.info-banner { background:#0f1e35; border:1px solid #1e3a5f; border-radius:8px; padding:12px 16px; font-size:13px; color:#93c5fd; margin-bottom:16px; }
+.info-banner { background:#0f1e35; border:1px solid #1e3a5f; border-radius:8px; padding:12px 16px; font-size:13px; color:#93c5fd; margin-bottom:16px; line-height:1.6; }
 .info-banner code { background:#1e3a5f; padding:1px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:12px; }
 
 .agents { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
@@ -451,7 +484,7 @@ textarea:focus, input:focus { outline:none; border-color:#3b82f6; }
 .agent.failed  { border-color:#ef4444; background:#2d0a0a; }
 .agent-icon        { font-size:24px; margin-bottom:6px; }
 .agent-name        { font-size:12px; font-weight:600; margin-bottom:2px; }
-.agent-model       { font-size:10px; color:#475569; font-family:'JetBrains Mono',monospace; margin-bottom:4px; }
+.agent-model       { font-size:10px; color:#a78bfa; font-family:'JetBrains Mono',monospace; margin-bottom:4px; }
 .agent-status-text { font-size:11px; }
 
 .log-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:13px; font-weight:600; color:#64748b; }
@@ -484,15 +517,18 @@ textarea:focus, input:focus { outline:none; border-color:#3b82f6; }
 .step-num { width:28px; height:28px; min-width:28px; background:#1e3a5f; color:#60a5fa; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; }
 .step-body { flex:1; font-size:13px; line-height:1.7; color:#94a3b8; }
 .step-body strong { color:#e2e8f0; display:block; margin-bottom:4px; }
-.step-body pre, .step-body code { font-family:'JetBrains Mono',monospace; background:#0d0f14; padding:4px 10px; border-radius:4px; font-size:12px; color:#60a5fa; display:inline-block; margin-top:4px; }
-.step-body ul { margin-left:16px; }
+.step-body pre { font-family:'JetBrains Mono',monospace; background:#0d0f14; padding:10px 12px; border-radius:6px; font-size:12px; color:#60a5fa; display:block; margin-top:8px; white-space:pre-wrap; }
+.step-body code { font-family:'JetBrains Mono',monospace; background:#0d0f14; padding:2px 8px; border-radius:4px; font-size:12px; color:#a78bfa; }
+.step-body em { color:#64748b; font-style:normal; }
 .step-body a { color:#60a5fa; }
-.cost-box { background:#0d0f14; border-radius:8px; padding:16px; margin-top:8px; }
-.cost-box h4 { font-size:13px; font-weight:600; color:#64748b; margin-bottom:10px; }
+
+.model-box { background:#0d0f14; border-radius:8px; padding:16px; margin-top:8px; }
+.model-box h4 { font-size:13px; font-weight:600; color:#64748b; margin-bottom:12px; }
 .cost-table { width:100%; font-size:13px; border-collapse:collapse; }
-.cost-table td { padding:6px 8px; color:#94a3b8; }
-.cost-table td:last-child { text-align:right; color:#e2e8f0; }
-.cost-table tr.total td { color:#4ade80; border-top:1px solid #1e2535; padding-top:10px; font-weight:600; }
+.cost-table td { padding:7px 8px; color:#94a3b8; border-bottom:1px solid #1a1f2e; }
+.cost-table tr:first-child td { color:#64748b; font-weight:600; font-size:11px; text-transform:uppercase; }
+.cost-table code { font-family:'JetBrains Mono',monospace; background:#1a1040; padding:1px 6px; border-radius:3px; font-size:11px; color:#a78bfa; }
+.cost-table tr.total td { color:#4ade80; border-top:2px solid #1e2535; padding-top:10px; font-weight:600; border-bottom:none; }
 
 .dim   { color:#334155; }
 .green { color:#4ade80; }
