@@ -1007,7 +1007,7 @@ public class MultiAgentWorkflow
         => new ChatClientBuilder(
                 new CerebrasChatClient(
                     _config["Cerebras:ApiKey"] ?? throw new Exception("Missing Cerebras:ApiKey"),
-                    "llama3.1-8b"))
+                    "llama3.3-70b"))
             .UseFunctionInvocation().Build();
 
     private IChatClient CreateGeminiClient()
