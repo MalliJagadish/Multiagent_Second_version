@@ -200,7 +200,7 @@ public class MultiAgentWorkflow
                 "ListFiles", "List staged files.")
         };
 
-        state.GeneratedCode = await RunAgentLoop(state, CreateGroqClient(),
+        state.GeneratedCode = await RunAgentLoop(state, CreateCerebrasClient(),
             BuildCoderPrompt(state),
             $"Implement: {state.FeatureDescription}", "CoderAgent", tools, 15);
     }
@@ -223,7 +223,7 @@ public class MultiAgentWorkflow
                 "WriteTestFile", "Write a test file."),
         };
 
-        state.UnitTestResults = await RunAgentLoop(state, CreateGroqClient(),
+        state.UnitTestResults = await RunAgentLoop(state, CreateCerebrasClient(),
             BuildUnitTestPrompt(state),
             $"Write NUnit tests for: {state.FeatureDescription}", "UnitTestAgent", tools, 12);
     }
@@ -395,7 +395,7 @@ public class MultiAgentWorkflow
             Do NOT output function calls as XML tags.
             """;
 
-        await RunAgentLoop(state, CreateGroqClient(), prompt,
+        await RunAgentLoop(state, CreateCerebrasClient(), prompt,
             "Address all findings.", "CoderAgent", tools, 20);
 
         // Default unresponded findings
@@ -1001,6 +1001,13 @@ public class MultiAgentWorkflow
                 new GroqChatClient(
                     _config["Groq:ApiKey"] ?? throw new Exception("Missing Groq:ApiKey"),
                     "llama-3.3-70b-versatile"))
+            .UseFunctionInvocation().Build();
+
+    private IChatClient CreateCerebrasClient()
+        => new ChatClientBuilder(
+                new CerebrasChatClient(
+                    _config["Cerebras:ApiKey"] ?? throw new Exception("Missing Cerebras:ApiKey"),
+                    "llama3.1-8b"))
             .UseFunctionInvocation().Build();
 
     private IChatClient CreateGeminiClient()
