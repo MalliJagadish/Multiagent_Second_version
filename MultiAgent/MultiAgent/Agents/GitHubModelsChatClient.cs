@@ -60,7 +60,7 @@ public class GitHubModelsChatClient : IChatClient
         var choice = doc.RootElement.GetProperty("choices")[0];
         var msg = choice.GetProperty("message");
 
-        if (msg.TryGetProperty("tool_calls", out var tcs) && tcs.GetArrayLength() > 0)
+        if (msg.TryGetProperty("tool_calls", out var tcs) && tcs.ValueKind == JsonValueKind.Array && tcs.GetArrayLength() > 0)
         {
             var contents = new List<AIContent>();
             foreach (var tc in tcs.EnumerateArray())
