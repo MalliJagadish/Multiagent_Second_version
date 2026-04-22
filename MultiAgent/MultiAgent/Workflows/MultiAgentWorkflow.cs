@@ -308,6 +308,10 @@ public class MultiAgentWorkflow
                  [Description("Vulnerability + vector + fix")] string vulnerability,
                  [Description("CRITICAL, HIGH, MEDIUM, or LOW")] string severity) =>
                 {
+                    // "N/A":0 is the convention for a clean scan — don't add as a finding
+                    if (filePath.Equals("N/A", StringComparison.OrdinalIgnoreCase) && line == 0)
+                        return "✅ Clean — no vulnerabilities found.";
+
                     var f = new ReviewFinding
                     {
                         Id = Guid.NewGuid().ToString("N")[..8],
