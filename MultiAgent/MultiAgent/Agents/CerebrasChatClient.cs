@@ -21,7 +21,7 @@ public class CerebrasChatClient : IChatClient
     public ChatClientMetadata Metadata =>
         new("Cerebras", new Uri("https://api.cerebras.ai"), _model);
 
-    public CerebrasChatClient(string apiKey, string model = "llama3.1-8b")
+    public CerebrasChatClient(string apiKey, string model = "llama3.3-70b")
     {
         _model = model;
         _http = new HttpClient();
