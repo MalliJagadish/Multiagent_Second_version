@@ -819,9 +819,6 @@ public class MultiAgentWorkflow
                 await Log(state, agentName,
                     $"✅ {Truncate(tr.Result?.ToString() ?? "", 120)}", "success");
 
-            if (calls.Count > 0 && results.Count > 0)
-                continue;
-
             if (calls.Count > 0 && results.Count == 0)
             {
                 await Log(state, agentName,
