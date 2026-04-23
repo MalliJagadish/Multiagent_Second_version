@@ -412,7 +412,7 @@ I am still exploring this space. The following ideas represent possible directio
 - **Planning agent** — Break large tasks into smaller, well-scoped steps before handing off to the Coder agent.
 - **Dynamic model assignment** — Assign the most suitable AI model to each agent role based on task complexity.
 - **Supervisor agent** — Monitor agent execution, detect failures, and handle recovery automatically.
-- **Agent-to-Agent (A2A) communication** — Enable scalable multi-agent orchestration using frameworks like Microsoft Agent Framework (MAF).
+- **Agent-to-Agent (A2A) communication** — Enable scalable multi-agent orchestration.
 - **RAG integration** — Align generated code with existing project conventions by grounding agents in a retrieval index of the codebase.
 - **Runtime test execution** — Connect to an actual runtime environment so test agents can run tests and feed real results back into the pipeline.
 - **Security scanning orchestration** — Integrate tools like Snyk with AI interpretation to prioritize and contextualize vulnerability fixes.
