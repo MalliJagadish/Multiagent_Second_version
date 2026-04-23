@@ -33,7 +33,7 @@
 
 ## What Is This Project?
 
-**MultiAgent** is a prototype AI-driven developer pipeline that uses a team of cooperating software agents to automatically implement small feature requests and persist results to GitHub.
+**MultiAgent** is a prototype AI-driven developer pipeline that uses a team of cooperating software agents to automatically implement small feature requests and persist the results to GitHub. It leverages the same foundational abstractions as MAF, while implementing a custom multi-agent orchestration.
 
 It consists of:
 - A **C# / ASP.NET Core backend** that orchestrates multiple specialised AI agents working in a defined sequence, backed by multiple AI providers (Gemini, Groq, and GitHub Models)
