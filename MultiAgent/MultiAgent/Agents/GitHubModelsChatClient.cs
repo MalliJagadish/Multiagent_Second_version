@@ -7,8 +7,8 @@ namespace MultiAgent.Agents;
 
 /// <summary>
 /// GitHub Models IChatClient — FREE, uses existing GitHub PAT.
-/// Model: openai/gpt-4.1-nano
-/// Used for: ReviewAgent (different vendor = unbiased review)
+/// Supports any model available on models.github.ai (OpenAI, Meta, Mistral, etc.)
+/// Default: openai/gpt-4.1-nano — override via constructor parameter.
 /// </summary>
 public class GitHubModelsChatClient : IChatClient
 {
@@ -60,7 +60,7 @@ public class GitHubModelsChatClient : IChatClient
         var choice = doc.RootElement.GetProperty("choices")[0];
         var msg = choice.GetProperty("message");
 
-        if (msg.TryGetProperty("tool_calls", out var tcs) && tcs.GetArrayLength() > 0)
+        if (msg.TryGetProperty("tool_calls", out var tcs) && tcs.ValueKind == JsonValueKind.Array && tcs.GetArrayLength() > 0)
         {
             var contents = new List<AIContent>();
             foreach (var tc in tcs.EnumerateArray())
